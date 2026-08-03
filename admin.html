@@ -17,14 +17,11 @@
     </style>
 </head>
 <body>
-    
     <!-- LOGIN -->
     <div id="login-container" class="card">
         <h2>Acceso Restringido - Programador</h2>
-        <form onsubmit="event.preventDefault(); verificarClave();">
-            <input type="password" id="password" placeholder="Ingresa tu clave de admin">
-            <button type="submit">Entrar</button>
-        </form>
+        <input type="password" id="password" placeholder="Ingresa tu clave de admin">
+        <button onclick="verificarClave()">Entrar</button>
     </div>
 
     <!-- PANEL PRINCIPAL -->
@@ -55,24 +52,11 @@
         <button class="btn-danger" onclick="reiniciarDatos()">Reiniciar Estadísticas</button>
     </div>
 
+    <!-- Carga la contraseña desde el archivo externo -->
+    <script src="config.js"></script>
     <script>
-        // Función nativa para encriptar la clave introducida
-        async function sha256(texto) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(texto);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        async function verificarClave() {
-            const inputPassword = document.getElementById("password").value.trim();
-            const hashIngresado = await sha256(inputPassword);
-
-            // Código cifrado de "Ludmila31"
-            const hashCorrecto = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92";
-
-            if (hashIngresado === hashCorrecto) {
+        function verificarClave() {
+            if(document.getElementById("password").value === claveSecreta) {
                 document.getElementById("login-container").style.display = "none";
                 document.getElementById("admin-panel").style.display = "block";
                 cargarMetricas();
