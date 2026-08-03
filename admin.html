@@ -52,9 +52,10 @@
         <button class="btn-danger" onclick="reiniciarDatos()">Reiniciar Estadísticas</button>
     </div>
 
+    <!-- Carga la contraseña desde el archivo externo -->
+    <script src="config.js"></script>
     <script>
         function verificarClave() {
-            const claveSecreta = "Ludmila31"; // Cambia por tu contraseña
             if(document.getElementById("password").value === claveSecreta) {
                 document.getElementById("login-container").style.display = "none";
                 document.getElementById("admin-panel").style.display = "block";
