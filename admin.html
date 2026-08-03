@@ -56,8 +56,8 @@
     </div>
 
     <script>
-        // Función nativa para convertir texto a una huella encriptada SHA-256
-        async function generarHash(texto) {
+        // Función nativa para encriptar la clave introducida
+        async function sha256(texto) {
             const encoder = new TextEncoder();
             const data = encoder.encode(texto);
             const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -66,15 +66,13 @@
         }
 
         async function verificarClave() {
-            const inputPassword = document.getElementById("password").value;
-            
-            // Calculamos el hash de lo que escribió el usuario
-            const hashIngresado = await generarHash(inputPassword);
+            const inputPassword = document.getElementById("password").value.trim();
+            const hashIngresado = await sha256(inputPassword);
 
-            // Este código es la huella digital cifrada de "Ludmila31"
+            // Código cifrado de "Ludmila31"
             const hashCorrecto = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92";
 
-            if(hashIngresado === hashCorrecto) {
+            if (hashIngresado === hashCorrecto) {
                 document.getElementById("login-container").style.display = "none";
                 document.getElementById("admin-panel").style.display = "block";
                 cargarMetricas();
