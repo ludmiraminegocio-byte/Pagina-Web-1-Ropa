@@ -17,11 +17,15 @@
     </style>
 </head>
 <body>
-    <!-- LOGIN -->
+    
+   <!-- LOGIN -->
     <div id="login-container" class="card">
         <h2>Acceso Restringido - Programador</h2>
-        <input type="password" id="password" placeholder="Ingresa tu clave de admin">
-        <button onclick="verificarClave()">Entrar</button>
+        <!-- Envuelto en un formulario para que funcione la tecla Enter -->
+        <form onsubmit="event.preventDefault(); verificarClave();">
+            <input type="password" id="password" placeholder="Ingresa tu clave de admin">
+            <button type="submit">Entrar</button>
+        </form>
     </div>
 
     <!-- PANEL PRINCIPAL -->
