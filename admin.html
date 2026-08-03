@@ -65,8 +65,7 @@
         function verificarClave() {
             const inputPassword = document.getElementById("password").value.trim();
             
-            // "THVkbWlsYTMx" es la contraseña "Ludmila31" codificada en Base64
-            // Así nadie ve la contraseña en texto plano en GitHub
+
             if (btoa(inputPassword) === "THVkbWlsYTMx") {
                 document.getElementById("login-container").style.display = "none";
                 document.getElementById("admin-panel").style.display = "block";
