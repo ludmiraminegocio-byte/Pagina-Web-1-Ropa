@@ -18,10 +18,9 @@
 </head>
 <body>
     
-   <!-- LOGIN -->
+    <!-- LOGIN -->
     <div id="login-container" class="card">
         <h2>Acceso Restringido - Programador</h2>
-        <!-- Envuelto en un formulario para que funcione la tecla Enter -->
         <form onsubmit="event.preventDefault(); verificarClave();">
             <input type="password" id="password" placeholder="Ingresa tu clave de admin">
             <button type="submit">Entrar</button>
@@ -56,11 +55,26 @@
         <button class="btn-danger" onclick="reiniciarDatos()">Reiniciar Estadísticas</button>
     </div>
 
-    <!-- Carga la contraseña desde el archivo externo -->
-    <script src="config.js"></script>
     <script>
-        function verificarClave() {
-            if(document.getElementById("password").value === claveSecreta) {
+        // Función nativa para convertir texto a una huella encriptada SHA-256
+        async function generarHash(texto) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(texto);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function verificarClave() {
+            const inputPassword = document.getElementById("password").value;
+            
+            // Calculamos el hash de lo que escribió el usuario
+            const hashIngresado = await generarHash(inputPassword);
+
+            // Este código es la huella digital cifrada de "Ludmila31"
+            const hashCorrecto = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92";
+
+            if(hashIngresado === hashCorrecto) {
                 document.getElementById("login-container").style.display = "none";
                 document.getElementById("admin-panel").style.display = "block";
                 cargarMetricas();
