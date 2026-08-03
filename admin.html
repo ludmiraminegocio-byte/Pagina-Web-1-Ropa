@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Estadísticas - Tienda</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; color: #333; }
+        .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h1, h2 { color: #2c3e50; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #2c3e50; color: white; }
+        .btn-danger { background: #e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+        .btn-danger:hover { background: #c0392b; }
+        input[type="password"] { padding: 8px; font-size: 14px; }
+        button { padding: 8px 15px; font-size: 14px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <!-- LOGIN -->
+    <div id="login-container" class="card">
+        <h2>Acceso Restringido - Programador</h2>
+        <input type="password" id="password" placeholder="Ingresa tu clave de admin">
+        <button onclick="verificarClave()">Entrar</button>
+    </div>
+
+    <!-- PANEL PRINCIPAL -->
+    <div id="admin-panel" class="card" style="display:none;">
+        <h1>Panel de Visualizaciones - Historial de Interacciones</h1>
+        
+        <div style="margin-bottom: 20px;">
+            <p><strong>Total de interacciones en el carrito:</strong> <span id="stat-carritos">0</span></p>
+            <p><strong>Total de veces que se tocó WhatsApp:</strong> <span id="stat-whatsapp">0</span></p>
+        </div>
+
+        <h2>Registro Detallado (Como en tu cuaderno)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Producto</th>
+                    <th>¿Seleccionaron comprar por WhatsApp?</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-historial">
+                <!-- Aquí se llenarán los datos automáticamente -->
+            </tbody>
+        </table>
+
+        <br>
+        <button class="btn-danger" onclick="reiniciarDatos()">Reiniciar Estadísticas</button>
+    </div>
+
+    <script>
+        function verificarClave() {
+            const claveSecreta = "Ludmila31"; // Cambia por tu contraseña
+            if(document.getElementById("password").value === claveSecreta) {
+                document.getElementById("login-container").style.display = "none";
+                document.getElementById("admin-panel").style.display = "block";
+                cargarMetricas();
+            } else {
+                alert("Contraseña incorrecta");
+            }
+        }
+
+        function cargarMetricas() {
+            let historial = JSON.parse(localStorage.getItem("stats_historial_detallado")) || [];
+            let clicksWhatsApp = localStorage.getItem("stats_whatsapp") || 0;
+            let totalCarritos = localStorage.getItem("stats_total_carritos") || 0;
+
+            document.getElementById("stat-carritos").innerText = totalCarritos;
+            document.getElementById("stat-whatsapp").innerText = clicksWhatsApp;
+
+            let tbody = document.getElementById("tabla-historial");
+            tbody.innerHTML = "";
+
+            if (historial.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#777;">No hay registros todavía. ¡Prueba agregar algo al carrito!</td></tr>`;
+                return;
+            }
+
+            historial.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.fecha}</td>
+                        <td>${item.hora}</td>
+                        <td>${item.producto}</td>
+                        <td><strong>${item.comproWp}</strong></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function reiniciarDatos() {
+            if(confirm("¿Estás seguro de borrar todas las estadísticas?")) {
+                localStorage.removeItem("stats_historial_detallado");
+                localStorage.removeItem("stats_whatsapp");
+                localStorage.removeItem("stats_total_carritos");
+                cargarMetricas();
+            }
+        }
+    </script>
+</body>
+</html>
