@@ -2,24 +2,26 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Panel de Estadísticas - Tienda</title>
+    <title>Panel de Visualizaciones - Tienda</title>
     <style>
         body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; color: #333; }
         .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         h1, h2 { color: #2c3e50; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px; vertical-align: middle; }
         th { background: #2c3e50; color: white; }
-        .btn-danger { background: #e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
-        .btn-danger:hover { background: #c0392b; }
-        input[type="password"] { padding: 8px; font-size: 14px; }
-        button { padding: 8px 15px; font-size: 14px; cursor: pointer; }
-
-        /* Estilos del botón de verificación e indicadores MP */
-        .btn-check { background: #2980b9; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        
+        /* Botones e Indicadores */
+        .btn-check { background: #2980b9; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .btn-check:hover { background: #1c5980; }
-        .badge-success { background: #27ae60; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
-        .badge-fail { background: #e67e22; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+        .btn-info { background: #d35400; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 5px; }
+        .btn-info:hover { background: #a04000; }
+        .btn-recheck { background: #7f8c8d; color: white; border: none; padding: 4px 6px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 5px; }
+        
+        .badge-success { background: #27ae60; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block; }
+        .badge-fail { background: #e67e22; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block; }
+        .badge-pending { background: #f39c12; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block; }
+        .btn-danger { background: #e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -28,8 +30,8 @@
     <div id="login-container" class="card">
         <h2>Acceso Restringido - Programador</h2>
         <form id="form-login">
-            <input type="password" id="password" placeholder="Ingresa tu clave de admin" required>
-            <button type="submit">Entrar</button>
+            <input type="password" id="password" placeholder="Ingresa tu clave de admin" style="padding:8px;" required>
+            <button type="submit" style="padding:8px 15px;">Entrar</button>
         </form>
     </div>
 
@@ -51,12 +53,13 @@
                     <th>Productos Elegidos (con precios)</th>
                     <th>Titular de la Cuenta</th>
                     <th>Monto Total</th>
-                    <th>¿Seleccionaron comprar por WhatsApp?</th>
+                    <th>¿Compró por WhatsApp?</th>
                     <th>Verificación MP</th>
+                    <th>Estado del Pedido</th>
                 </tr>
             </thead>
             <tbody id="tabla-historial">
-                <!-- Aquí se llenarán los datos automáticamente -->
+                <!-- Se llena dinámicamente -->
             </tbody>
         </table>
 
@@ -69,33 +72,25 @@
 
         document.getElementById("form-login").addEventListener("submit", function(event) {
             event.preventDefault();
-            verificarClave();
-        });
-
-        function verificarClave() {
-            const inputPassword = document.getElementById("password").value.trim();
-            if (btoa(inputPassword) === "THVkbWlsYTMx") {
+            if (btoa(document.getElementById("password").value.trim()) === "THVkdWlsYTMx") {
                 document.getElementById("login-container").style.display = "none";
                 document.getElementById("admin-panel").style.display = "block";
                 cargarMetricas();
             } else {
                 alert("Contraseña incorrecta");
             }
-        }
+        });
 
         function cargarMetricas() {
             let historial = JSON.parse(localStorage.getItem("stats_historial_detallado")) || [];
-            let clicksWhatsApp = localStorage.getItem("stats_whatsapp") || 0;
-            let totalCarritos = localStorage.getItem("stats_total_carritos") || 0;
-
-            document.getElementById("stat-carritos").innerText = totalCarritos;
-            document.getElementById("stat-whatsapp").innerText = clicksWhatsApp;
+            document.getElementById("stat-carritos").innerText = localStorage.getItem("stats_total_carritos") || 0;
+            document.getElementById("stat-whatsapp").innerText = localStorage.getItem("stats_whatsapp") || 0;
 
             let tbody = document.getElementById("tabla-historial");
             tbody.innerHTML = "";
 
             if (historial.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#777;">No hay registros todavía. ¡Prueba realizar una compra!</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#777;">No hay registros todavía.</td></tr>`;
                 return;
             }
 
@@ -103,6 +98,37 @@
                 let titular = item.titular ? item.titular : "-";
                 let monto = item.montoTotal ? item.montoTotal : "-";
                 let estiloWp = item.comproWp === "Sí" ? "background-color: #d4edda; font-weight: bold;" : "";
+                
+                let colVerificación = "";
+                let colEstado = "";
+
+                // Verificar si esta fila ya fue consultada y guardada previamente
+                if (item.verificacion) {
+                    if (item.verificacion.verificado) {
+                        colVerificación = `
+                            <span class="badge-success">✔ Acreditado</span>
+                            <button class="btn-recheck" title="Volver a consultar" onclick="verificarConNodeRed('${titular}', '${monto}', ${index})">🔄</button>
+                        `;
+                        colEstado = `<span class="badge-success">CONFIRMADO</span>`;
+                    } else {
+                        let motivoEscapado = escape(item.verificacion.motivo || "Sin información del error");
+                        colVerificación = `
+                            <span class="badge-fail">🔴 Sin registro</span>
+                            <button class="btn-info" title="Ver información del error" onclick="alert(unescape('${motivoEscapado}'))">ℹ️ Motivo</button>
+                            <button class="btn-recheck" title="Volver a consultar" onclick="verificarConNodeRed('${titular}', '${monto}', ${index})">🔄</button>
+                        `;
+                        colEstado = `<span class="badge-fail">NO CONFIRMADO</span>`;
+                    }
+                } else {
+                    // Si nunca se verificó
+                    if (item.comproWp === "Sí") {
+                        colVerificación = `<button class="btn-check" onclick="verificarConNodeRed('${titular}', '${monto}', ${index})">🔍 Verificar MP</button>`;
+                        colEstado = `<span class="badge-pending">PENDIENTE</span>`;
+                    } else {
+                        colVerificación = "-";
+                        colEstado = "-";
+                    }
+                }
 
                 tbody.innerHTML += `
                     <tr>
@@ -112,35 +138,39 @@
                         <td><strong>${titular}</strong></td>
                         <td><strong>${monto}</strong></td>
                         <td style="${estiloWp}">${item.comproWp}</td>
-                        <td id="mp-status-${index}">
-                            ${item.comproWp === "Sí" ? `<button class="btn-check" onclick="verificarConNodeRed('${titular}', '${monto}', ${index})">🔍 Verificar MP</button>` : "-"}
-                        </td>
+                        <td id="mp-col-${index}">${colVerificación}</td>
+                        <td id="estado-col-${index}">${colEstado}</td>
                     </tr>
                 `;
             });
         }
 
         async function verificarConNodeRed(titular, monto, index) {
-            const contenedor = document.getElementById(`mp-status-${index}`);
-            contenedor.innerHTML = "<em>Consultando...</em>";
+            const colMp = document.getElementById(`mp-col-${index}`);
+            colMp.innerHTML = "<em>Consultando MP...</em>";
 
             try {
                 const response = await fetch(`${NODE_RED_URL}?titular=${encodeURIComponent(titular)}&monto=${encodeURIComponent(monto)}`);
                 const data = await response.json();
 
-                if (data.verificado) {
-                    contenedor.innerHTML = `<span class="badge-success">✔ Acreditado ($${data.monto_recibido})</span>`;
-                } else {
-                    contenedor.innerHTML = `<span class="badge-fail">✖ Sin registro</span>`;
+                // Guardar la respuesta permanentemente en el LocalStorage
+                let historial = JSON.parse(localStorage.getItem("stats_historial_detallado")) || [];
+                if (historial[index]) {
+                    historial[index].verificacion = data;
+                    localStorage.setItem("stats_historial_detallado", JSON.stringify(historial));
                 }
+
+                // Recargar la tabla para mostrar los nuevos botones e íconos guardados
+                cargarMetricas();
+
             } catch (error) {
                 console.error("Error al conectar con Node-RED:", error);
-                contenedor.innerHTML = `<span style="color:red; font-size:12px;">Error de conexión</span>`;
+                colMp.innerHTML = `<span style="color:red; font-size:12px;">Error de conexión con Node-RED</span>`;
             }
         }
 
         function reiniciarDatos() {
-            if(confirm("¿Estás seguro de borrar todas las estadísticas?")) {
+            if (confirm("¿Estás seguro de borrar todas las estadísticas?")) {
                 localStorage.removeItem("stats_historial_detallado");
                 localStorage.removeItem("stats_whatsapp");
                 localStorage.removeItem("stats_total_carritos");
