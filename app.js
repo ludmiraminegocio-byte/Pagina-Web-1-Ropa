@@ -3,9 +3,9 @@ const productos = [
     { id: 1, nombre: "Remera Rosa", precio: 10, imagen: "img/remera.jpg" },
     { id: 2, nombre: "Pantalón de Jean", precio: 20, imagen: "img/pantalon.jpg" },
     { id: 3, nombre: "Campera de Abrigo", precio: 4, imagen: "img/campera.jpg" },
-    { id: 4, nombre: "Borsegos", precio: 55000, imagen: "img/borsegos.jpg" },
-    { id: 5, nombre: "Bikini Negra", precio: 18000, imagen: "img/bikini.jpg" },
-    { id: 6, nombre: "Pollera Negra", precio: 12000, imagen: "img/pollera-negra.jpg" }
+    { id: 4, nombre: "Borsegos", precio: 50, imagen: "img/borsegos.jpg" },
+    { id: 5, nombre: "Bikini Negra", precio: 18, imagen: "img/bikini.jpg" },
+    { id: 6, nombre: "Pollera Negra", precio: 12, imagen: "img/pollera-negra.jpg" }
 ];
 
 // 2. ESTADO DEL CARRITO
