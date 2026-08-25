@@ -8,12 +8,18 @@
         .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         h1, h2 { color: #2c3e50; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px; }
         th { background: #2c3e50; color: white; }
         .btn-danger { background: #e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
         .btn-danger:hover { background: #c0392b; }
         input[type="password"] { padding: 8px; font-size: 14px; }
         button { padding: 8px 15px; font-size: 14px; cursor: pointer; }
+
+        /* Estilos del botón de verificación e indicadores MP */
+        .btn-check { background: #2980b9; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-check:hover { background: #1c5980; }
+        .badge-success { background: #27ae60; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+        .badge-fail { background: #e67e22; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -42,8 +48,11 @@
                 <tr>
                     <th>Fecha</th>
                     <th>Hora</th>
-                    <th>Producto</th>
+                    <th>Productos Elegidos (con precios)</th>
+                    <th>Titular de la Cuenta</th>
+                    <th>Monto Total</th>
                     <th>¿Seleccionaron comprar por WhatsApp?</th>
+                    <th>Verificación MP</th>
                 </tr>
             </thead>
             <tbody id="tabla-historial">
@@ -56,16 +65,15 @@
     </div>
 
     <script>
-        // Escuchamos el envío del formulario directamente
+        const NODE_RED_URL = "http://localhost:1880/verificar-pago";
+
         document.getElementById("form-login").addEventListener("submit", function(event) {
-            event.preventDefault(); // Evita que la página se recargue
+            event.preventDefault();
             verificarClave();
         });
 
         function verificarClave() {
             const inputPassword = document.getElementById("password").value.trim();
-            
-
             if (btoa(inputPassword) === "THVkbWlsYTMx") {
                 document.getElementById("login-container").style.display = "none";
                 document.getElementById("admin-panel").style.display = "block";
@@ -87,20 +95,48 @@
             tbody.innerHTML = "";
 
             if (historial.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#777;">No hay registros todavía. ¡Prueba agregar algo al carrito!</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#777;">No hay registros todavía. ¡Prueba realizar una compra!</td></tr>`;
                 return;
             }
 
-            historial.forEach(item => {
+            historial.forEach((item, index) => {
+                let titular = item.titular ? item.titular : "-";
+                let monto = item.montoTotal ? item.montoTotal : "-";
+                let estiloWp = item.comproWp === "Sí" ? "background-color: #d4edda; font-weight: bold;" : "";
+
                 tbody.innerHTML += `
                     <tr>
                         <td>${item.fecha}</td>
                         <td>${item.hora}</td>
                         <td>${item.producto}</td>
-                        <td><strong>${item.comproWp}</strong></td>
+                        <td><strong>${titular}</strong></td>
+                        <td><strong>${monto}</strong></td>
+                        <td style="${estiloWp}">${item.comproWp}</td>
+                        <td id="mp-status-${index}">
+                            ${item.comproWp === "Sí" ? `<button class="btn-check" onclick="verificarConNodeRed('${titular}', '${monto}', ${index})">🔍 Verificar MP</button>` : "-"}
+                        </td>
                     </tr>
                 `;
             });
+        }
+
+        async function verificarConNodeRed(titular, monto, index) {
+            const contenedor = document.getElementById(`mp-status-${index}`);
+            contenedor.innerHTML = "<em>Consultando...</em>";
+
+            try {
+                const response = await fetch(`${NODE_RED_URL}?titular=${encodeURIComponent(titular)}&monto=${encodeURIComponent(monto)}`);
+                const data = await response.json();
+
+                if (data.verificado) {
+                    contenedor.innerHTML = `<span class="badge-success">✔ Acreditado ($${data.monto_recibido})</span>`;
+                } else {
+                    contenedor.innerHTML = `<span class="badge-fail">✖ Sin registro</span>`;
+                }
+            } catch (error) {
+                console.error("Error al conectar con Node-RED:", error);
+                contenedor.innerHTML = `<span style="color:red; font-size:12px;">Error de conexión</span>`;
+            }
         }
 
         function reiniciarDatos() {
