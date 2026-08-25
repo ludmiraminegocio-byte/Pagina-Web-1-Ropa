@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Visualizaciones - Tienda</title>
     <style>
         body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; color: #333; }
@@ -21,17 +22,17 @@
         .badge-success { background: #27ae60; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block; }
         .badge-fail { background: #e67e22; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block; }
         .badge-pending { background: #f39c12; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block; }
-        .btn-danger { background: #e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+        .btn-danger { background: #e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
     
     <!-- LOGIN -->
     <div id="login-container" class="card">
-        <h2>Acceso Restringido - Programador</h2>
+        <h2>Acceso Restringido - Administrador</h2>
         <form id="form-login">
             <input type="password" id="password" placeholder="Ingresa tu clave de admin" style="padding:8px;" required>
-            <button type="submit" style="padding:8px 15px;">Entrar</button>
+            <button type="submit" style="padding:8px 15px; cursor:pointer;">Entrar</button>
         </form>
     </div>
 
@@ -69,10 +70,13 @@
 
     <script>
         const NODE_RED_URL = "http://localhost:1880/verificar-pago";
+        const CLAVE_CORRECTA = "Ludmila31"; 
 
         document.getElementById("form-login").addEventListener("submit", function(event) {
             event.preventDefault();
-            if (btoa(document.getElementById("password").value.trim()) === "THVkdWlsYTMx") {
+            const claveIngresada = document.getElementById("password").value.trim();
+
+            if (claveIngresada === CLAVE_CORRECTA) {
                 document.getElementById("login-container").style.display = "none";
                 document.getElementById("admin-panel").style.display = "block";
                 cargarMetricas();
@@ -120,7 +124,6 @@
                         colEstado = `<span class="badge-fail">NO CONFIRMADO</span>`;
                     }
                 } else {
-                    // Si nunca se verificó
                     if (item.comproWp === "Sí") {
                         colVerificación = `<button class="btn-check" onclick="verificarConNodeRed('${titular}', '${monto}', ${index})">🔍 Verificar MP</button>`;
                         colEstado = `<span class="badge-pending">PENDIENTE</span>`;
@@ -153,14 +156,12 @@
                 const response = await fetch(`${NODE_RED_URL}?titular=${encodeURIComponent(titular)}&monto=${encodeURIComponent(monto)}`);
                 const data = await response.json();
 
-                // Guardar la respuesta permanentemente en el LocalStorage
                 let historial = JSON.parse(localStorage.getItem("stats_historial_detallado")) || [];
                 if (historial[index]) {
                     historial[index].verificacion = data;
                     localStorage.setItem("stats_historial_detallado", JSON.stringify(historial));
                 }
 
-                // Recargar la tabla para mostrar los nuevos botones e íconos guardados
                 cargarMetricas();
 
             } catch (error) {
