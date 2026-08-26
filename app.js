@@ -3,9 +3,9 @@ const productos = [
     { id: 1, nombre: "Remera Rosa", precio: 10, imagen: "img/remera.jpg" },
     { id: 2, nombre: "Pantalón de Jean", precio: 20, imagen: "img/pantalon.jpg" },
     { id: 3, nombre: "Campera de Abrigo", precio: 4, imagen: "img/campera.jpg" },
-    { id: 4, nombre: "Borsegos", precio: 50, imagen: "img/borsegos.jpg" },
-    { id: 5, nombre: "Bikini Negra", precio: 18, imagen: "img/bikini.jpg" },
-    { id: 6, nombre: "Pollera Negra", precio: 12, imagen: "img/pollera-negra.jpg" }
+    { id: 4, nombre: "Borsegos", precio: 55000, imagen: "img/borsegos.jpg" },
+    { id: 5, nombre: "Bikini Negra", precio: 18000, imagen: "img/bikini.jpg" },
+    { id: 6, nombre: "Pollera Negra", precio: 12000, imagen: "img/pollera-negra.jpg" }
 ];
 
 // 2. ESTADO DEL CARRITO
@@ -84,12 +84,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            // Capturar Titular
             const inputTitular = document.getElementById('input-titular');
             let nombreTitular = inputTitular ? inputTitular.value.trim() : "";
 
             if (!nombreTitular) {
                 alert("Por favor, ingresa el nombre de la cuenta con la que vas a transferir.");
                 if (inputTitular) inputTitular.focus();
+                return;
+            }
+
+            // Capturar WhatsApp del cliente (¡NUEVO!)
+            const inputWsp = document.getElementById('input-wsp');
+            let numeroWsp = inputWsp ? inputWsp.value.trim() : "";
+
+            if (!numeroWsp) {
+                alert("Por favor, ingresa tu número de WhatsApp para que podamos enviarte el estado de tu pedido.");
+                if (inputWsp) inputWsp.focus();
                 return;
             }
 
@@ -112,18 +123,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
             let historial = JSON.parse(localStorage.getItem("stats_historial_detallado")) || [];
 
+            // Guardar en el historial (¡AHORA INCLUYE EL WSP!)
             historial.unshift({
                 fecha: fechaStr,
                 hora: horaStr,
                 producto: detalleProductos,
                 titular: nombreTitular,
+                wsp: numeroWsp, // Campo agregado para el panel admin
                 montoTotal: montoTotal,
                 comproWp: "Sí"
             });
 
             localStorage.setItem("stats_historial_detallado", JSON.stringify(historial));
 
-            // Mensaje para enviar por WhatsApp
+            // Mensaje para enviar a tu WhatsApp
             let textoMensaje = "Hola, quiero confirmar este pedido:\n\n";
             carrito.forEach(p => {
                 textoMensaje += `- ${p.nombre} ($${p.precio})\n`;
@@ -131,6 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             textoMensaje += `\nMonto total a pagar: ${montoTotal}`;
             textoMensaje += `\nTitular de la cuenta: ${nombreTitular}`;
+            textoMensaje += `\nMi número de WhatsApp: ${numeroWsp}`; // Se agrega al mensaje que te envían
             textoMensaje += `\n\nAdjunto el comprobante de transferencia. Gracias!`;
 
             const numeroWhatsApp = "5493424279070"; 
