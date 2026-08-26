@@ -50,12 +50,16 @@
     <h2>Tu Carrito</h2>
     <ul id="carrito"></ul>
 
-    <!-- NUEVO FORMULARIO DE PAGO -->
+    <!-- FORMULARIO DE PAGO ACTUALIZADO -->
     <div class="formulario-pago">
         <h3>Datos para la Transferencia</h3>
         
         <label for="input-titular">Nombre de la cuenta con la que vas a transferir:</label>
         <input type="text" id="input-titular" placeholder="Ej: Juan Perez">
+
+        <!-- NUEVO CAMPO DE WHATSAPP -->
+        <label for="input-wsp">Tu número de WhatsApp (con código de área):</label>
+        <input type="tel" id="input-wsp" placeholder="Ej: 5493421234567" required>
 
         <label for="input-monto">Monto total a pagar:</label>
         <input type="text" id="input-monto" value="$0" readonly>
