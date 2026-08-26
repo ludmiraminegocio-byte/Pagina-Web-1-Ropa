@@ -9,19 +9,20 @@
         .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         h1, h2 { color: #2c3e50; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px; vertical-align: middle; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 13px; vertical-align: middle; }
         th { background: #2c3e50; color: white; }
         
         /* Botones e Indicadores */
-        .btn-check { background: #2980b9; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-check { background: #2980b9; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .btn-check:hover { background: #1c5980; }
-        .btn-info { background: #d35400; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 5px; }
-        .btn-info:hover { background: #a04000; }
-        .btn-recheck { background: #7f8c8d; color: white; border: none; padding: 4px 6px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 5px; }
+        .btn-info { background: #d35400; color: white; border: none; padding: 4px 6px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 2px; }
+        .btn-wsp { background: #25d366; color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; margin-left: 2px; text-decoration: none; display: inline-block; }
+        .btn-wsp:hover { background: #1eb954; }
+        .btn-recheck { background: #7f8c8d; color: white; border: none; padding: 4px 6px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 2px; }
         
-        .badge-success { background: #27ae60; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block; }
-        .badge-fail { background: #e67e22; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block; }
-        .badge-pending { background: #f39c12; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block; }
+        .badge-success { background: #27ae60; color: white; padding: 5px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block; }
+        .badge-fail { background: #e67e22; color: white; padding: 5px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block; }
+        .badge-pending { background: #f39c12; color: white; padding: 5px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block; }
         .btn-danger { background: #e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
@@ -53,6 +54,7 @@
                     <th>Hora</th>
                     <th>Productos Elegidos (con precios)</th>
                     <th>Titular de la Cuenta</th>
+                    <th>Número WSP</th>
                     <th>Monto Total</th>
                     <th>¿Compró por WhatsApp?</th>
                     <th>Verificación MP</th>
@@ -94,41 +96,55 @@
             tbody.innerHTML = "";
 
             if (historial.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#777;">No hay registros todavía.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#777;">No hay registros todavía.</td></tr>`;
                 return;
             }
 
             historial.forEach((item, index) => {
                 let titular = item.titular ? item.titular : "-";
+                let telefono = item.wsp ? item.wsp : "-";
                 let monto = item.montoTotal ? item.montoTotal : "-";
                 let estiloWp = item.comproWp === "Sí" ? "background-color: #d4edda; font-weight: bold;" : "";
                 
-                let colVerificación = "";
+                let colVerificacion = "";
                 let colEstado = "";
 
-                // Verificar si esta fila ya fue consultada y guardada previamente
+                // Limpiar número de WhatsApp para link directo
+                let numWspLimpio = telefono.replace(/[^0-9]/g, "");
+
                 if (item.verificacion) {
                     if (item.verificacion.verificado) {
-                        colVerificación = `
+                        let msjExito = encodeURIComponent(`¡Hola ${titular}! Confirmamos que tu transferencia de ${monto} fue verificada con éxito en Mercado Pago. Tu pedido ya está en preparación. ¡Muchas gracias!`);
+                        let linkWspExito = numWspLimpio ? `<a href="https://wa.me/${numWspLimpio}?text=${msjExito}" target="_blank" class="btn-wsp" title="Enviar confirmación por WhatsApp">💬 Avisar</a>` : "";
+
+                        colVerificacion = `
                             <span class="badge-success">✔ Acreditado</span>
+                            ${linkWspExito}
                             <button class="btn-recheck" title="Volver a consultar" onclick="verificarConNodeRed('${titular}', '${monto}', ${index})">🔄</button>
                         `;
                         colEstado = `<span class="badge-success">CONFIRMADO</span>`;
                     } else {
                         let motivoEscapado = escape(item.verificacion.motivo || "Sin información del error");
-                        colVerificación = `
+                        
+                        // Mensajes personalizados para WhatsApp según el caso de error
+                        let textoBaseError = `Hola ${titular}, te contactamos por tu pedido de ${monto}. Verificamos en Mercado Pago y encontramos una inconsistencia: ${item.verificacion.motivo}. Por favor indícanos tu CBU/Alias para devolverte el importe o realizar el ajuste correspondiente.`;
+                        let msjError = encodeURIComponent(textoBaseError);
+                        let linkWspError = numWspLimpio ? `<a href="https://wa.me/${numWspLimpio}?text=${msjError}" target="_blank" class="btn-wsp" style="background:#e74c3c;" title="Contactar cliente y solicitar CBU/Alias">💬 Devolver / Resolver</a>` : "";
+
+                        colVerificacion = `
                             <span class="badge-fail">🔴 Sin registro</span>
-                            <button class="btn-info" title="Ver información del error" onclick="alert(unescape('${motivoEscapado}'))">ℹ️ Motivo</button>
+                            <button class="btn-info" title="Ver detalle del error" onclick="alert(unescape('${motivoEscapado}'))">ℹ️ Motivo</button>
+                            ${linkWspError}
                             <button class="btn-recheck" title="Volver a consultar" onclick="verificarConNodeRed('${titular}', '${monto}', ${index})">🔄</button>
                         `;
                         colEstado = `<span class="badge-fail">NO CONFIRMADO</span>`;
                     }
                 } else {
                     if (item.comproWp === "Sí") {
-                        colVerificación = `<button class="btn-check" onclick="verificarConNodeRed('${titular}', '${monto}', ${index})">🔍 Verificar MP</button>`;
+                        colVerificacion = `<button class="btn-check" onclick="verificarConNodeRed('${titular}', '${monto}', ${index})">🔍 Verificar MP</button>`;
                         colEstado = `<span class="badge-pending">PENDIENTE</span>`;
                     } else {
-                        colVerificación = "-";
+                        colVerificacion = "-";
                         colEstado = "-";
                     }
                 }
@@ -139,9 +155,10 @@
                         <td>${item.hora}</td>
                         <td>${item.producto}</td>
                         <td><strong>${titular}</strong></td>
+                        <td><strong>${telefono}</strong></td>
                         <td><strong>${monto}</strong></td>
                         <td style="${estiloWp}">${item.comproWp}</td>
-                        <td id="mp-col-${index}">${colVerificación}</td>
+                        <td id="mp-col-${index}">${colVerificacion}</td>
                         <td id="estado-col-${index}">${colEstado}</td>
                     </tr>
                 `;
