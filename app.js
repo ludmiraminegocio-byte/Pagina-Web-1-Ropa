@@ -1,4 +1,4 @@
-const URL_API_GOOGLE = 'https://script.google.com/macros/s/AKfycbzxwX4IvssM6Qwou05SPipK6tIu8g0vnNKkzmo-gUuYDU8mxigzWaLmt6zVEnbENKHP/exec';
+const URL_API_GOOGLE = 'https://script.google.com/macros/s/AKfycbylouzWyPDDuWpKMQLKQzi6erN_KpfHvNdb-osX21DDZwfunF091rnSCRIHpFfED0g/exec';
 
 // Lista de productos del catálogo
 const productos = [
@@ -54,6 +54,19 @@ function agregarAlCarrito(id) {
     actualizarCarritoUI();
 }
 
+// Eliminar un producto puntual del carrito por índice
+function eliminarDelCarrito(index) {
+    carrito.splice(index, 1);
+    actualizarCarritoUI();
+}
+
+// Vaciar carrito completo
+function vaciarCarrito() {
+    carrito = [];
+    comisionActual = 0;
+    actualizarCarritoUI();
+}
+
 // Actualizar lista, subtotal, comisión y total exacto
 function actualizarCarritoUI() {
     const ulCarrito = document.getElementById("carrito");
@@ -64,13 +77,16 @@ function actualizarCarritoUI() {
     if (ulCarrito) ulCarrito.innerHTML = "";
     let subtotal = 0;
 
-    carrito.forEach((item) => {
+    carrito.forEach((item, index) => {
         subtotal += item.precio;
         if (ulCarrito) {
             ulCarrito.innerHTML += `
                 <li>
                     <span>- ${item.nombre} (Talle ${item.talle})</span>
-                    <strong style="color: #00ffcc;">$${item.precio.toLocaleString('es-AR')}</strong>
+                    <div>
+                        <strong style="color: #00ffcc;">$${item.precio.toLocaleString('es-AR')}</strong>
+                        <button class="btn-eliminar" onclick="eliminarDelCarrito(${index})">X</button>
+                    </div>
                 </li>
             `;
         }
@@ -90,10 +106,14 @@ function actualizarCarritoUI() {
     if (textoSubtotal) textoSubtotal.innerText = `$${subtotal.toLocaleString('es-AR')}`;
     if (textoComision) textoComision.innerText = `$${comisionActual.toFixed(2)}`;
     if (inputMonto) {
-        // Formato con punto de miles y coma decimal
-        const partes = totalConComision.toFixed(2).split('.');
-        const enteroFormateado = parseInt(partes[0], 10).toLocaleString('es-AR');
-        inputMonto.value = `$${enteroFormateado},${partes[1]}`;
+        if (subtotal === 0) {
+            inputMonto.value = "$0";
+        } else {
+            // Formato con punto de miles y coma decimal
+            const partes = totalConComision.toFixed(2).split('.');
+            const enteroFormateado = parseInt(partes[0], 10).toLocaleString('es-AR');
+            inputMonto.value = `$${enteroFormateado},${partes[1]}`;
+        }
     }
 }
 
