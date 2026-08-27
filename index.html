@@ -127,29 +127,38 @@
 
     <!-- Sección de Checkout -->
     <div class="formulario-pago" id="checkout-section">
-        <h3>Finalizar Pedido</h3>
+    <h3>Finalizar Pedido</h3>
 
-        <div class="datos-bancarios">
-            <p class="texto-resaltado"><strong>1. Transferí el total a esta cuenta:</strong></p>
-            <p style="margin: 5px 0;"><strong>Alias:</strong> LUDMILA3105</p>
-            <p style="margin: 5px 0;"><strong>Titular:</strong> Ludmila</p>
-        </div>
-
-        <p class="texto-resaltado"><strong>2. Completá los datos para verificar tu pago:</strong></p>
-        
-        <label for="input-titular">¿Desde qué cuenta nos transferís?</label>
-        <input type="text" id="input-titular" placeholder="Nombre exacto del titular">
-
-        <label for="input-wsp">Tu WhatsApp (opcional pero recomendado):</label>
-        <input type="tel" id="input-wsp" placeholder="Ej: 342154279070">
-
-        <label for="input-monto">Monto total a pagar:</label>
-        <input type="text" id="input-monto" value="$0" readonly>
-        
-        <button id="btn-whatsapp" onclick="confirmarPedido()" style="margin-top: 20px; width: 100%; padding: 12px; font-size: 16px; font-weight: bold; cursor: pointer; background-color: #25D366; color: white; border: none; border-radius: 5px;">
-            Confirmar y Avisar por WhatsApp
-        </button>
+    <div class="datos-bancarios">
+        <p class="texto-resaltado"><strong>1. Transferí el total a esta cuenta:</strong></p>
+        <p style="margin: 5px 0;"><strong>Alias:</strong> LUDMILA3105</p>
+        <p style="margin: 5px 0;"><strong>Titular:</strong> Ludmila</p>
     </div>
+
+    <p class="texto-resaltado"><strong>2. Completá los datos para verificar tu pago:</strong></p>
+    
+    <label for="input-titular">¿Desde qué cuenta nos transferís?</label>
+    <input type="text" id="input-titular" placeholder="Nombre exacto del titular">
+
+    <label for="input-wsp">Tu WhatsApp (opcional pero recomendado):</label>
+    <input type="tel" id="input-wsp" placeholder="Ej: 342154279070">
+
+    <!-- DESGLOSE TRANSPARENTE DE PRECIOS -->
+    <div style="margin-top: 15px; padding: 10px; background-color: #1a1a1a; border-radius: 5px; border: 1px solid #333;">
+        <p style="margin: 5px 0; font-size: 14px;">Subtotal productos: <span id="texto-subtotal" style="float: right;">$0</span></p>
+        <p style="margin: 5px 0; font-size: 13px; color: #aaa;">Comisión de validación: <span id="texto-comision" style="float: right;">$0.00</span></p>
+        <small style="color: #888; font-size: 11px; display: block; margin-top: 3px;">
+            * Los centavos son una comisión requerida por el sistema para identificar y validar automáticamente tu transferencia.
+        </small>
+        <hr style="border-color: #333; margin: 8px 0;">
+        <label for="input-monto" style="margin: 0; font-weight: bold; color: #00ffcc;">Monto exacto a transferir:</label>
+        <input type="text" id="input-monto" value="$0" readonly style="margin-top: 5px;">
+    </div>
+    
+    <button id="btn-whatsapp" onclick="confirmarPedido()" style="margin-top: 20px; width: 100%; padding: 12px; font-size: 16px; font-weight: bold; cursor: pointer; background-color: #25D366; color: white; border: none; border-radius: 5px;">
+        Confirmar y Avisar por WhatsApp
+    </button>
+</div>
 
     <script src="app.js"></script>
 </body>
