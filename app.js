@@ -2,12 +2,12 @@ const URL_API_GOOGLE = 'https://script.google.com/macros/s/AKfycbz8Te_iDAr2Y-3Ws
 
 // Lista de productos del catálogo (puedes cambiar precios, nombres e imágenes aquí)
 const productos = [
-    { id: 1, nombre: "Remera Oversize", precio: 22000, imagen: "https://via.placeholder.com/200" },
-    { id: 2, nombre: "Pantalón Wide Leg", precio: 45000, imagen: "https://via.placeholder.com/200" },
-    { id: 3, nombre: "Buzo Cropped", precio: 65000, imagen: "https://via.placeholder.com/200" },
-    { id: 4, nombre: "Campera Denim", precio: 55000, imagen: "https://via.placeholder.com/200" },
-    { id: 5, nombre: "Top Urbano", precio: 18000, imagen: "https://via.placeholder.com/200" },
-    { id: 6, nombre: "Short Sastrero", precio: 15000, imagen: "https://via.placeholder.com/200" }
+    { id: 1, nombre: "Remera Oversize", precio: 22, imagen: "https://via.placeholder.com/200" },
+    { id: 2, nombre: "Pantalón Wide Leg", precio: 40, imagen: "https://via.placeholder.com/200" },
+    { id: 3, nombre: "Buzo Cropped", precio: 60, imagen: "https://via.placeholder.com/200" },
+    { id: 4, nombre: "Campera Denim", precio: 50, imagen: "https://via.placeholder.com/200" },
+    { id: 5, nombre: "Top Urbano", precio: 18, imagen: "https://via.placeholder.com/200" },
+    { id: 6, nombre: "Short Sastrero", precio: 15, imagen: "https://via.placeholder.com/200" }
 ];
 
 let carrito = [];
