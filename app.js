@@ -38,6 +38,7 @@ function cargarCatalogo() {
         `;
     });
 
+    // Si ya se registró un pedido en esta sesión, ocultamos el formulario y mostramos el cartel de éxito
     if (sessionStorage.getItem("pedido_bloqueado") === "true") {
         bloquearTiendaPorPedidoRealizado();
     }
@@ -121,7 +122,7 @@ function actualizarCarritoUI() {
     }
 }
 
-// Bloquea la interfaz de pago y muestra el cartel con las instrucciones y tu alias
+// Muestra el cartel de éxito en la sección de checkout una vez procesado el pedido
 function bloquearTiendaPorPedidoRealizado() {
     sessionStorage.setItem("pedido_bloqueado", "true");
     
@@ -131,12 +132,7 @@ function bloquearTiendaPorPedidoRealizado() {
             <div style="background-color: #111; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #00ffcc; margin-top: 20px;">
                 <h3 style="color: #00ffcc; margin-top: 0;">¡Pedido Registrado con Éxito!</h3>
                 <p style="color: #ddd; font-size: 14px;">Ya generaste un pedido en esta sesión.</p>
-                <div style="background: #222; padding: 12px; border-radius: 5px; margin: 15px 0; text-align: left; color: #fff;">
-                    <p style="margin: 5px 0;">👤 <b>Titular y Alias:</b> (Tu alias configurado)</p>
-                    <p style="margin: 5px 0;">📱 <b>WhatsApp de contacto:</b> 3424279070</p>
-                </div>
-                <p style="color: #aaa; font-size: 13px;">Si deseas realizar otra compra para iniciar un nuevo carrito, hacé clic acá:</p>
-                <button onclick="sessionStorage.clear(); location.reload();" style="background-color: #00ffcc; color: #000; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 5px;">
+                <button onclick="sessionStorage.clear(); location.reload();" style="background-color: #00ffcc; color: #000; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 10px;">
                     Hacer otro pedido
                 </button>
             </div>
@@ -147,7 +143,7 @@ function bloquearTiendaPorPedidoRealizado() {
 // Confirmar pedido enviando los datos y respetando la comisión de la web
 function confirmarPedido() {
     if (sessionStorage.getItem("pedido_bloqueado") === "true") {
-        alert("Ya has registrado un pedido.");
+        alert("Ya has registrado un pedido en esta sesión.");
         return;
     }
 
