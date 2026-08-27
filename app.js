@@ -1,4 +1,4 @@
-const URL_API_GOOGLE = 'hhttps://script.google.com/macros/s/AKfycbyoHftl6tPH2WQKn4Rf4Eug4FOr3sybTFbrPGL7XYezkA1OU5r7bp2Sv4RLwWpto3Ne/exec';
+const URL_API_GOOGLE = 'https://script.google.com/macros/s/AKfycbyoHftl6tPH2WQKn4Rf4Eug4FOr3sybTFbrPGL7XYezkA1OU5r7bp2Sv4RLwWpto3Ne/exec';
 
 // Lista de productos del catálogo
 const productos = [
