@@ -2,6 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <!-- 1. EL META VIEWPORT: Fundamental para que se vea bien en celulares -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Tienda de Ropa - Lux Indument</title>
     
     <style>
@@ -34,15 +36,30 @@
         }
         #input-monto {
             background-color: #222;
-            color: #00ffcc;
+            color: #00ffcc; /* Color celeste/verde agua brillante */
             font-weight: bold;
             cursor: not-allowed;
+        }
+        /* NUEVO: Estilo para la cajita de los datos bancarios */
+        .datos-bancarios {
+            background-color: #222; 
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+            color: #ddd;
+        }
+        .texto-resaltado {
+            color: #00ffcc;
+            font-size: 14px;
+            margin: 0 0 10px 0;
         }
     </style>
 </head>
 <body>
     <h1>Catálogo de Ropa</h1>
     
+    <!-- Acá es donde tu app.js inyecta los productos -->
     <div id="catalogo"></div>
     
     <hr>
@@ -50,24 +67,32 @@
     <h2>Tu Carrito</h2>
     <ul id="carrito"></ul>
 
-    <!-- FORMULARIO DE PAGO ACTUALIZADO -->
-    <div class="formulario-pago">
-        <h3>Datos para la Transferencia</h3>
-        
-        <label for="input-titular">Nombre de la cuenta con la que vas a transferir:</label>
-        <input type="text" id="input-titular" placeholder="Ej: Juan Perez">
+    <!-- 3. SECCIÓN DE CHECKOUT CON DATOS BANCARIOS A LA VISTA -->
+    <div class="formulario-pago" id="checkout-section">
+        <h3>Finalizar Pedido</h3>
 
-        <!-- NUEVO CAMPO DE WHATSAPP -->
-        <label for="input-wsp">Tu número de WhatsApp (con código de área):</label>
-        <input type="tel" id="input-wsp" placeholder="Ej: 5493421234567" required>
+        <div class="datos-bancarios">
+            <p class="texto-resaltado"><strong>1. Transferí el total a esta cuenta:</strong></p>
+            <p style="margin: 5px 0;"><strong>Alias:</strong> lux.indument.mp</p>
+            <p style="margin: 5px 0;"><strong>CVU:</strong> 0000003100000000000000</p>
+            <p style="margin: 5px 0;"><strong>Titular:</strong> Tu Nombre Apellido</p>
+        </div>
+
+        <p class="texto-resaltado"><strong>2. Completá los datos para verificar tu pago:</strong></p>
+        
+        <label for="input-titular">¿Desde qué cuenta nos transferís?</label>
+        <input type="text" id="input-titular" placeholder="Nombre exacto del titular">
+
+        <label for="input-wsp">Tu WhatsApp (opcional pero recomendado):</label>
+        <input type="tel" id="input-wsp" placeholder="Ej: 342154279070">
 
         <label for="input-monto">Monto total a pagar:</label>
         <input type="text" id="input-monto" value="$0" readonly>
+        
+        <button id="btn-whatsapp" style="margin-top: 20px; width: 100%; padding: 12px; font-size: 16px; font-weight: bold; cursor: pointer; background-color: #25D366; color: white; border: none; border-radius: 5px;">
+            Confirmar y Avisar por WhatsApp
+        </button>
     </div>
-    
-    <button id="btn-whatsapp" style="padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #25D366; color: white; border: none; border-radius: 5px;">
-        Comprar por WhatsApp
-    </button>
 
     <script src="app.js"></script>
 </body>
