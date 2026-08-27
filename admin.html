@@ -65,11 +65,12 @@
             padding: 12px 10px;
             border-bottom: 1px solid #262626;
             font-size: 13px;
-            vertical-align: top;
+            vertical-align: middle;
         }
 
+        /* Fuerza a que los productos aparezcan todos en una sola línea */
         .col-productos {
-            white-space: pre-line;
+            white-space: nowrap;
         }
 
         .monto {
@@ -162,6 +163,14 @@
             return val;
         }
 
+        // Reemplaza saltos de línea por comas para mantener todo en una única fila continua
+        function formatearProductosEnLinea(val) {
+            if (!val) return "-";
+            return String(val)
+                .replace(/[\r\n]+/g, ', ')
+                .trim();
+        }
+
         function cargarPedidos() {
             const tbody = document.getElementById("tabla-body");
             tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Cargando registros...</td></tr>';
@@ -178,12 +187,13 @@
                     pedidos.forEach(ped => {
                         const fechaLimpia = formatearFecha(ped.fecha);
                         const horaLimpia = formatearHora(ped.hora);
+                        const productosEnLinea = formatearProductosEnLinea(ped.productos);
 
                         tbody.innerHTML += `
                             <tr>
                                 <td>${fechaLimpia}</td>
                                 <td>${horaLimpia} hs</td>
-                                <td class="col-productos">${ped.productos}</td>
+                                <td class="col-productos">${productosEnLinea}</td>
                                 <td><strong>${ped.titular}</strong></td>
                                 <td>${ped.whatsapp}</td>
                                 <td class="monto">$${parseFloat(ped.montoTotal).toFixed(2)}</td>
