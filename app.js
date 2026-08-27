@@ -18,6 +18,12 @@ function cargarCatalogo() {
     const contenedor = document.getElementById("catalogo");
     if (!contenedor) return;
 
+    // Si ya se registró un pedido en esta sesión, bloqueamos la tienda de inmediato
+    if (sessionStorage.getItem("pedido_bloqueado") === "true") {
+        bloquearTiendaPorPedidoRealizado();
+        return;
+    }
+
     contenedor.innerHTML = "";
     productos.forEach(prod => {
         contenedor.innerHTML += `
@@ -41,6 +47,8 @@ function cargarCatalogo() {
 
 // Agregar producto al carrito
 function agregarAlCarrito(id) {
+    if (sessionStorage.getItem("pedido_bloqueado") === "true") return;
+
     const prod = productos.find(p => p.id === id);
     const talleElegido = document.getElementById(`talle-${id}`).value;
 
@@ -109,7 +117,6 @@ function actualizarCarritoUI() {
         if (subtotal === 0) {
             inputMonto.value = "$0";
         } else {
-            // Formato con punto de miles y coma decimal
             const partes = totalConComision.toFixed(2).split('.');
             const enteroFormateado = parseInt(partes[0], 10).toLocaleString('es-AR');
             inputMonto.value = `$${enteroFormateado},${partes[1]}`;
@@ -117,8 +124,31 @@ function actualizarCarritoUI() {
     }
 }
 
+// Bloquea la interfaz para que no se puedan hacer más pedidos en la misma sesión
+function bloquearTiendaPorPedidoRealizado() {
+    sessionStorage.setItem("pedido_bloqueado", "true");
+    
+    const checkoutSection = document.getElementById("checkout-section");
+    if (checkoutSection) {
+        checkoutSection.innerHTML = `
+            <div style="background-color: #111; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #00ffcc;">
+                <h3 style="color: #00ffcc; margin-top: 0;">¡Pedido Registrado con Éxito!</h3>
+                <p style="color: #ddd; font-size: 14px;">Ya generaste un pedido en esta sesión. Si deseas realizar otra compra, por favor recarga la página para iniciar un nuevo carrito.</p>
+                <button onclick="sessionStorage.clear(); location.reload();" style="background-color: #00ffcc; color: #000; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 10px;">
+                    Hacer otro pedido
+                </button>
+            </div>
+        `;
+    }
+}
+
 // Confirmar pedido enviando los datos y respetando la comisión de la web
 function confirmarPedido() {
+    if (sessionStorage.getItem("pedido_bloqueado") === "true") {
+        alert("Ya has registrado un pedido.");
+        return;
+    }
+
     const inputTitular = document.getElementById("input-titular");
     const inputWsp = document.getElementById("input-wsp");
     const btnWhatsapp = document.getElementById("btn-whatsapp");
@@ -149,7 +179,7 @@ function confirmarPedido() {
     };
 
     if (btnWhatsapp) {
-        btnWhatsapp.innerText = "Procesando...";
+        btnWhatsapp.innerText = "Registrando pedido...";
         btnWhatsapp.disabled = true;
     }
 
@@ -174,12 +204,12 @@ function confirmarPedido() {
         mensaje += `\nWhatsApp: ${numeroWsp}`;
         mensaje += `\n\n⚠️ Transferir EXACTAMENTE $${datos.montoExacto} para que el sistema apruebe la compra.`;
 
+        // Abrimos WhatsApp en otra pestaña
         window.open(`https://wa.me/5493424279070?text=${encodeURIComponent(mensaje)}`, '_blank');
         
-        if (btnWhatsapp) {
-            btnWhatsapp.innerText = "Confirmar y Avisar por WhatsApp";
-            btnWhatsapp.disabled = false;
-        }
+        // Vaciamos el carrito y bloqueamos permanentemente la tienda en esta pestaña
+        vaciarCarrito();
+        bloquearTiendaPorPedidoRealizado();
     })
     .catch(err => {
         console.error("Error detallado:", err);
