@@ -65,12 +65,13 @@
             padding: 12px 10px;
             border-bottom: 1px solid #262626;
             font-size: 13px;
-            vertical-align: middle;
+            vertical-align: top;
         }
 
-        /* Fuerza a que los productos aparezcan todos en una sola línea */
+        /* Mantiene el salto de línea para que cada producto aparezca uno abajo del otro */
         .col-productos {
-            white-space: nowrap;
+            white-space: pre-line;
+            line-height: 1.4;
         }
 
         .monto {
@@ -163,12 +164,12 @@
             return val;
         }
 
-        // Reemplaza saltos de línea por comas para mantener todo en una única fila continua
-        function formatearProductosEnLinea(val) {
+        // Formatea el string de productos separándolos por salto de línea
+        function formatearProductosVertical(val) {
             if (!val) return "-";
             return String(val)
-                .replace(/[\r\n]+/g, ', ')
-                .trim();
+                .split(/,\s*/)
+                .join("\n");
         }
 
         function cargarPedidos() {
@@ -183,17 +184,20 @@
                         return;
                     }
 
+                    // Invierte el orden para mostrar lo más reciente arriba
+                    pedidos.reverse();
+
                     tbody.innerHTML = "";
                     pedidos.forEach(ped => {
                         const fechaLimpia = formatearFecha(ped.fecha);
                         const horaLimpia = formatearHora(ped.hora);
-                        const productosEnLinea = formatearProductosEnLinea(ped.productos);
+                        const productosVerticales = formatearProductosVertical(ped.productos);
 
                         tbody.innerHTML += `
                             <tr>
                                 <td>${fechaLimpia}</td>
                                 <td>${horaLimpia} hs</td>
-                                <td class="col-productos">${productosEnLinea}</td>
+                                <td class="col-productos">${productosVerticales}</td>
                                 <td><strong>${ped.titular}</strong></td>
                                 <td>${ped.whatsapp}</td>
                                 <td class="monto">$${parseFloat(ped.montoTotal).toFixed(2)}</td>
