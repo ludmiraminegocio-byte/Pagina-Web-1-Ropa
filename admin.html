@@ -3,198 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Visualizaciones - Tienda</title>
+    <title>Panel de Visualizaciones - Historial</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; color: #333; }
-        .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h1, h2 { color: #2c3e50; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 13px; vertical-align: middle; }
-        th { background: #2c3e50; color: white; }
-        
-        /* Botones e Indicadores */
-        .btn-check { background: #2980b9; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .btn-check:hover { background: #1c5980; }
-        .btn-info { background: #d35400; color: white; border: none; padding: 4px 6px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 2px; }
-        .btn-wsp { background: #25d366; color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; margin-left: 2px; text-decoration: none; display: inline-block; }
-        .btn-wsp:hover { background: #1eb954; }
-        .btn-recheck { background: #7f8c8d; color: white; border: none; padding: 4px 6px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 2px; }
-        
-        .badge-success { background: #27ae60; color: white; padding: 5px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block; }
-        .badge-fail { background: #e67e22; color: white; padding: 5px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block; }
-        .badge-pending { background: #f39c12; color: white; padding: 5px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block; }
-        .btn-danger { background: #e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        body { font-family: Arial, sans-serif; background-color: #121212; color: #fff; margin: 20px; }
+        h1 { color: #00ffcc; text-align: center; }
+        .btn-refresh { background-color: #00ffcc; color: #000; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; display: block; margin: 0 auto 20px auto; }
+        .tabla-pedidos { width: 100%; border-collapse: collapse; margin-top: 20px; background: #1e1e1e; border-radius: 8px; overflow: hidden; }
+        .tabla-pedidos th, .tabla-pedidos td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
+        .tabla-pedidos th { background-color: #252525; color: #00ffcc; }
+        .estado-pendiente { background-color: #ff9800; color: #000; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+        .estado-aprobado { background-color: #4caf50; color: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
     </style>
 </head>
 <body>
-    
-    <!-- LOGIN -->
-    <div id="login-container" class="card">
-        <h2>Acceso Restringido - Administrador</h2>
-        <form id="form-login">
-            <input type="password" id="password" placeholder="Ingresa tu clave de admin" style="padding:8px;" required>
-            <button type="submit" style="padding:8px 15px; cursor:pointer;">Entrar</button>
-        </form>
-    </div>
 
-    <!-- PANEL PRINCIPAL -->
-    <div id="admin-panel" class="card" style="display:none;">
-        <h1>Panel de Visualizaciones - Historial de Interacciones</h1>
-        
-        <div style="margin-bottom: 20px;">
-            <p><strong>Total de interacciones en el carrito:</strong> <span id="stat-carritos">0</span></p>
-            <p><strong>Total de veces que se tocó WhatsApp:</strong> <span id="stat-whatsapp">0</span></p>
-        </div>
+    <h1>Panel de Visualizaciones - Historial de Interacciones</h1>
+    <button class="btn-refresh" onclick="cargarPedidos()">🔄 Actualizar Registros</button>
 
-        <h2>Registro Detallado</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Hora</th>
-                    <th>Productos Elegidos (con precios)</th>
-                    <th>Titular de la Cuenta</th>
-                    <th>Número WSP</th>
-                    <th>Monto Total</th>
-                    <th>¿Compró por WhatsApp?</th>
-                    <th>Verificación MP</th>
-                    <th>Estado del Pedido</th>
-                </tr>
-            </thead>
-            <tbody id="tabla-historial">
-                <!-- Se llena dinámicamente -->
-            </tbody>
-        </table>
-
-        <br>
-        <button class="btn-danger" onclick="reiniciarDatos()">Reiniciar Estadísticas</button>
-    </div>
+    <table class="tabla-pedidos">
+        <thead>
+            <tr>
+                <th>Fecha / Hora</th>
+                <th>Productos Elegidos</th>
+                <th>Titular</th>
+                <th>Número WSP</th>
+                <th>Monto Total</th>
+                <th>Verificación MP</th>
+                <th>Estado del Pedido</th>
+            </tr>
+        </thead>
+        <tbody id="lista-pedidos">
+            <tr><td colspan="7" style="text-align:center;">Cargando historial desde Google Sheets...</td></tr>
+        </tbody>
+    </table>
 
     <script>
-        const NODE_RED_URL = "http://localhost:1880/verificar-pago";
-        const CLAVE_CORRECTA = "Ludmila31"; 
+        // PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT
+        const URL_API_GOOGLE = 'https://script.google.com/macros/s/AKfycbzgTijrLA833GTkSJ90Qecc9wa4IisGoOFVja36OY4S-JVwN10ieGdRe__7PH_749cU/exechttps://script.google.com/macros/s/AKfycbz8Te_iDAr2Y-3WsxXTYvp7rf6OItvjEo8XG5Ak67AgYcpFruu-P539t4yg7Hm3GcpK/exec';
 
-        document.getElementById("form-login").addEventListener("submit", function(event) {
-            event.preventDefault();
-            const claveIngresada = document.getElementById("password").value.trim();
+        function cargarPedidos() {
+            fetch(URL_API_GOOGLE)
+                .then(res => res.json())
+                .then(pedidos => {
+                    const contenedor = document.getElementById('lista-pedidos');
+                    contenedor.innerHTML = '';
 
-            if (claveIngresada === CLAVE_CORRECTA) {
-                document.getElementById("login-container").style.display = "none";
-                document.getElementById("admin-panel").style.display = "block";
-                cargarMetricas();
-            } else {
-                alert("Contraseña incorrecta");
-            }
-        });
-
-        function cargarMetricas() {
-            let historial = JSON.parse(localStorage.getItem("stats_historial_detallado")) || [];
-            document.getElementById("stat-carritos").innerText = localStorage.getItem("stats_total_carritos") || 0;
-            document.getElementById("stat-whatsapp").innerText = localStorage.getItem("stats_whatsapp") || 0;
-
-            let tbody = document.getElementById("tabla-historial");
-            tbody.innerHTML = "";
-
-            if (historial.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#777;">No hay registros todavía.</td></tr>`;
-                return;
-            }
-
-            historial.forEach((item, index) => {
-                let titular = item.titular ? item.titular : "-";
-                let telefono = item.wsp ? item.wsp : "-";
-                let monto = item.montoTotal ? item.montoTotal : "-";
-                let estiloWp = item.comproWp === "Sí" ? "background-color: #d4edda; font-weight: bold;" : "";
-                
-                let colVerificacion = "";
-                let colEstado = "";
-
-                // Limpiar número de WhatsApp para link directo
-                let numWspLimpio = telefono.replace(/[^0-9]/g, "");
-
-                if (item.verificacion) {
-                    if (item.verificacion.verificado) {
-                        let msjExito = encodeURIComponent(`¡Hola ${titular}! Confirmamos que tu transferencia de ${monto} fue verificada con éxito en Mercado Pago. Tu pedido ya está en preparación. ¡Muchas gracias!`);
-                        let linkWspExito = numWspLimpio ? `<a href="https://wa.me/${numWspLimpio}?text=${msjExito}" target="_blank" class="btn-wsp" title="Enviar confirmación por WhatsApp">💬 Avisar</a>` : "";
-
-                        colVerificacion = `
-                            <span class="badge-success">✔ Acreditado</span>
-                            ${linkWspExito}
-                            <button class="btn-recheck" title="Volver a consultar" onclick="verificarConNodeRed('${titular}', '${monto}', ${index})">🔄</button>
-                        `;
-                        colEstado = `<span class="badge-success">CONFIRMADO</span>`;
-                    } else {
-                        let motivoEscapado = escape(item.verificacion.motivo || "Sin información del error");
-                        
-                        // Mensajes personalizados para WhatsApp según el caso de error
-                        let textoBaseError = `Hola ${titular}, te contactamos por tu pedido de ${monto}. Verificamos en Mercado Pago y encontramos una inconsistencia: ${item.verificacion.motivo}. Por favor indícanos tu CBU/Alias para devolverte el importe o realizar el ajuste correspondiente.`;
-                        let msjError = encodeURIComponent(textoBaseError);
-                        let linkWspError = numWspLimpio ? `<a href="https://wa.me/${numWspLimpio}?text=${msjError}" target="_blank" class="btn-wsp" style="background:#e74c3c;" title="Contactar cliente y solicitar CBU/Alias">💬 Devolver / Resolver</a>` : "";
-
-                        colVerificacion = `
-                            <span class="badge-fail">🔴 Sin registro</span>
-                            <button class="btn-info" title="Ver detalle del error" onclick="alert(unescape('${motivoEscapado}'))">ℹ️ Motivo</button>
-                            ${linkWspError}
-                            <button class="btn-recheck" title="Volver a consultar" onclick="verificarConNodeRed('${titular}', '${monto}', ${index})">🔄</button>
-                        `;
-                        colEstado = `<span class="badge-fail">NO CONFIRMADO</span>`;
+                    if (!pedidos || pedidos.length === 0) {
+                        contenedor.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay interacciones registradas aún.</td></tr>';
+                        return;
                     }
-                } else {
-                    if (item.comproWp === "Sí") {
-                        colVerificacion = `<button class="btn-check" onclick="verificarConNodeRed('${titular}', '${monto}', ${index})">🔍 Verificar MP</button>`;
-                        colEstado = `<span class="badge-pending">PENDIENTE</span>`;
-                    } else {
-                        colVerificacion = "-";
-                        colEstado = "-";
-                    }
-                }
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${item.fecha}</td>
-                        <td>${item.hora}</td>
-                        <td>${item.producto}</td>
-                        <td><strong>${titular}</strong></td>
-                        <td><strong>${telefono}</strong></td>
-                        <td><strong>${monto}</strong></td>
-                        <td style="${estiloWp}">${item.comproWp}</td>
-                        <td id="mp-col-${index}">${colVerificacion}</td>
-                        <td id="estado-col-${index}">${colEstado}</td>
-                    </tr>
-                `;
-            });
+                    pedidos.slice().reverse().forEach(p => {
+                        let badgeMP = p.verificacionMP === 'Aprobado' 
+                            ? '<span class="estado-aprobado">Aprobado</span>' 
+                            : '<span class="estado-pendiente">Pendiente</span>';
+
+                        let badgeEstado = p.estado === 'Aprobado' 
+                            ? '<span class="estado-aprobado">Aprobado</span>' 
+                            : '<span class="estado-pendiente">Pendiente</span>';
+
+                        contenedor.innerHTML += `
+                            <tr>
+                                <td>${p.fecha || ''} ${p.hora || ''}</td>
+                                <td>${p.productos || '-'}</td>
+                                <td><strong>${p.titular || '-'}</strong></td>
+                                <td>${p.whatsapp || '-'}</td>
+                                <td><strong style="color: #00ffcc;">$${Number(p.montoTotal).toFixed(2)}</strong></td>
+                                <td>${badgeMP}</td>
+                                <td>${badgeEstado}</td>
+                            </tr>
+                        `;
+                    });
+                })
+                .catch(err => {
+                    console.error("Error al cargar pedidos:", err);
+                    document.getElementById('lista-pedidos').innerHTML = '<tr><td colspan="7" style="text-align:center; color: #e74c3c;">Error al conectar con Google Sheets.</td></tr>';
+                });
         }
 
-        async function verificarConNodeRed(titular, monto, index) {
-            const colMp = document.getElementById(`mp-col-${index}`);
-            colMp.innerHTML = "<em>Consultando MP...</em>";
-
-            try {
-                const response = await fetch(`${NODE_RED_URL}?titular=${encodeURIComponent(titular)}&monto=${encodeURIComponent(monto)}`);
-                const data = await response.json();
-
-                let historial = JSON.parse(localStorage.getItem("stats_historial_detallado")) || [];
-                if (historial[index]) {
-                    historial[index].verificacion = data;
-                    localStorage.setItem("stats_historial_detallado", JSON.stringify(historial));
-                }
-
-                cargarMetricas();
-
-            } catch (error) {
-                console.error("Error al conectar con Node-RED:", error);
-                colMp.innerHTML = `<span style="color:red; font-size:12px;">Error de conexión con Node-RED</span>`;
-            }
-        }
-
-        function reiniciarDatos() {
-            if (confirm("¿Estás seguro de borrar todas las estadísticas?")) {
-                localStorage.removeItem("stats_historial_detallado");
-                localStorage.removeItem("stats_whatsapp");
-                localStorage.removeItem("stats_total_carritos");
-                cargarMetricas();
-            }
-        }
+        document.addEventListener('DOMContentLoaded', cargarPedidos);
     </script>
 </body>
 </html>
