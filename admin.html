@@ -68,7 +68,6 @@
             vertical-align: top;
         }
 
-        /* Estilo clave para que los productos salgan uno debajo del otro */
         .col-productos {
             white-space: pre-line;
         }
@@ -130,22 +129,35 @@
     <script>
         const URL_API_GOOGLE = 'https://script.google.com/macros/s/AKfycbylouzWyPDDuWpKMQLKQzi6erN_KpfHvNdb-osX21DDZwfunF091rnSCRIHpFfED0g/exec';
 
-        // Función para limpiar el formato de fecha proveniente de Google Sheets
+        // Formatea la fecha a día-mes-año (DD-MM-YYYY)
         function formatearFecha(val) {
             if (!val) return "-";
-            if (val.includes("T")) {
+            const fechaObj = new Date(val);
+            if (!isNaN(fechaObj.getTime())) {
+                const dia = String(fechaObj.getDate()).padStart(2, '0');
+                const mes = String(fechaObj.getMonth() + 1).padStart(2, '0');
+                const ano = fechaObj.getFullYear();
+                return `${dia}-${mes}-${ano}`;
+            }
+            if (typeof val === 'string' && val.includes("T")) {
                 const partes = val.split("T")[0].split("-");
-                if (partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+                if (partes.length === 3) return `${partes[2]}-${partes[1]}-${partes[0]}`;
             }
             return val;
         }
 
-        // Función para limpiar el formato de hora proveniente de Google Sheets
+        // Formatea la hora en formato 24hs (00 a 23:mm)
         function formatearHora(val) {
             if (!val) return "-";
-            if (val.includes("T")) {
+            const fechaObj = new Date(val);
+            if (!isNaN(fechaObj.getTime())) {
+                const horas = String(fechaObj.getHours()).padStart(2, '0');
+                const minutos = String(fechaObj.getMinutes()).padStart(2, '0');
+                return `${horas}:${minutos}`;
+            }
+            if (typeof val === 'string' && val.includes("T")) {
                 const horaPartes = val.split("T")[1].split(":");
-                if (horaPartes.length >= 2) return `${horaPartes[0]}:${horaPartes[1]}`;
+                if (horaPartes.length >= 2) return `${horaPartes[0].padStart(2, '0')}:${horaPartes[1].padStart(2, '0')}`;
             }
             return val;
         }
@@ -170,7 +182,7 @@
                         tbody.innerHTML += `
                             <tr>
                                 <td>${fechaLimpia}</td>
-                                <td>${horaLimpia}</td>
+                                <td>${horaLimpia} hs</td>
                                 <td class="col-productos">${ped.productos}</td>
                                 <td><strong>${ped.titular}</strong></td>
                                 <td>${ped.whatsapp}</td>
@@ -187,7 +199,6 @@
                 });
         }
 
-        // Cargar los registros automáticamente al entrar al panel
         document.addEventListener("DOMContentLoaded", cargarPedidos);
     </script>
 </body>
