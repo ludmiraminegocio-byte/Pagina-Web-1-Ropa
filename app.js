@@ -18,12 +18,6 @@ function cargarCatalogo() {
     const contenedor = document.getElementById("catalogo");
     if (!contenedor) return;
 
-    // Si ya se registró un pedido en esta sesión, bloqueamos la tienda de inmediato
-    if (sessionStorage.getItem("pedido_bloqueado") === "true") {
-        bloquearTiendaPorPedidoRealizado();
-        return;
-    }
-
     contenedor.innerHTML = "";
     productos.forEach(prod => {
         contenedor.innerHTML += `
@@ -43,6 +37,11 @@ function cargarCatalogo() {
             </div>
         `;
     });
+
+    // Si ya se registró un pedido en esta sesión, mostramos el aviso debajo sin borrar el catálogo
+    if (sessionStorage.getItem("pedido_bloqueado") === "true") {
+        bloquearTiendaPorPedidoRealizado();
+    }
 }
 
 // Agregar producto al carrito
@@ -124,16 +123,16 @@ function actualizarCarritoUI() {
     }
 }
 
-// Bloquea la interfaz para que no se puedan hacer más pedidos en la misma sesión
+// Bloquea la interfaz de pago pero deja visible el catálogo
 function bloquearTiendaPorPedidoRealizado() {
     sessionStorage.setItem("pedido_bloqueado", "true");
     
     const checkoutSection = document.getElementById("checkout-section");
     if (checkoutSection) {
         checkoutSection.innerHTML = `
-            <div style="background-color: #111; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #00ffcc;">
+            <div style="background-color: #111; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #00ffcc; margin-top: 20px;">
                 <h3 style="color: #00ffcc; margin-top: 0;">¡Pedido Registrado con Éxito!</h3>
-                <p style="color: #ddd; font-size: 14px;">Ya generaste un pedido en esta sesión. Si deseas realizar otra compra, por favor recarga la página para iniciar un nuevo carrito.</p>
+                <p style="color: #ddd; font-size: 14px;">Ya generaste un pedido en esta sesión. Si deseas realizar otra compra, haz clic en el siguiente botón:</p>
                 <button onclick="sessionStorage.clear(); location.reload();" style="background-color: #00ffcc; color: #000; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 10px;">
                     Hacer otro pedido
                 </button>
@@ -207,7 +206,7 @@ function confirmarPedido() {
         // Abrimos WhatsApp en otra pestaña
         window.open(`https://wa.me/5493424279070?text=${encodeURIComponent(mensaje)}`, '_blank');
         
-        // Vaciamos el carrito y bloqueamos permanentemente la tienda en esta pestaña
+        // Vaciamos el carrito y bloqueamos la sección de pago
         vaciarCarrito();
         bloquearTiendaPorPedidoRealizado();
     })
