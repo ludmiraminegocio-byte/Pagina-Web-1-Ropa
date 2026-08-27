@@ -3,87 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Visualizaciones - Historial</title>
+    <title>Panel de Visualizaciones - Lux Indument</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #121212; color: #fff; margin: 20px; }
-        h1 { color: #00ffcc; text-align: center; }
-        .btn-refresh { background-color: #00ffcc; color: #000; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; display: block; margin: 0 auto 20px auto; }
-        .tabla-pedidos { width: 100%; border-collapse: collapse; margin-top: 20px; background: #1e1e1e; border-radius: 8px; overflow: hidden; }
-        .tabla-pedidos th, .tabla-pedidos td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
-        .tabla-pedidos th { background-color: #252525; color: #00ffcc; }
-        .estado-pendiente { background-color: #ff9800; color: #000; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
-        .estado-aprobado { background-color: #4caf50; color: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+        body {
+            background-color: #0d0d0d;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #00ffcc;
+            margin-bottom: 20px;
+        }
+
+        .btn-contenedor {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-actualizar {
+            background-color: #00ffcc;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-actualizar:hover {
+            background-color: #00cca3;
+        }
+
+        .tabla-contenedor {
+            overflow-x: auto;
+            background-color: #1a1a1a;
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            color: #00ffcc;
+            padding: 12px 10px;
+            border-bottom: 2px solid #333;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #262626;
+            font-size: 13px;
+            vertical-align: top;
+        }
+
+        /* Estilo clave para que los productos salgan uno debajo del otro */
+        .col-productos {
+            white-space: pre-line;
+        }
+
+        .monto {
+            color: #00ffcc;
+            font-weight: bold;
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .badge-Pendiente {
+            background-color: #ff9900;
+            color: #000;
+        }
+
+        .badge-Aprobado {
+            background-color: #00ffcc;
+            color: #000;
+        }
     </style>
 </head>
 <body>
 
     <h1>Panel de Visualizaciones - Historial de Interacciones</h1>
-    <button class="btn-refresh" onclick="cargarPedidos()">🔄 Actualizar Registros</button>
 
-    <table class="tabla-pedidos">
-        <thead>
-            <tr>
-                <th>Fecha</th>
-                <th>Hora</th>
-                <th>Productos Elegidos</th>
-                <th>Titular</th>
-                <th>Número WSP</th>
-                <th>Monto Total</th>
-                <th>Verificación MP</th>
-                <th>Estado del Pedido</th>
-            </tr>
-        </thead>
-        <tbody id="lista-pedidos">
-            <tr><td colspan="7" style="text-align:center;">Cargando historial desde Google Sheets...</td></tr>
-        </tbody>
-    </table>
+    <div class="btn-contenedor">
+        <button class="btn-actualizar" onclick="cargarPedidos()">🔄 Actualizar Registros</button>
+    </div>
+
+    <div class="tabla-contenedor">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Productos Elegidos</th>
+                    <th>Titular</th>
+                    <th>Número WSP</th>
+                    <th>Monto Total</th>
+                    <th>Verificación MP</th>
+                    <th>Estado del Pedido</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-body">
+                <tr>
+                    <td colspan="8" style="text-align: center;">Cargando registros...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
     <script>
-        // URL Limpia y corregida
         const URL_API_GOOGLE = 'https://script.google.com/macros/s/AKfycbylouzWyPDDuWpKMQLKQzi6erN_KpfHvNdb-osX21DDZwfunF091rnSCRIHpFfED0g/exec';
 
+        // Función para limpiar el formato de fecha proveniente de Google Sheets
+        function formatearFecha(val) {
+            if (!val) return "-";
+            if (val.includes("T")) {
+                const partes = val.split("T")[0].split("-");
+                if (partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+            }
+            return val;
+        }
+
+        // Función para limpiar el formato de hora proveniente de Google Sheets
+        function formatearHora(val) {
+            if (!val) return "-";
+            if (val.includes("T")) {
+                const horaPartes = val.split("T")[1].split(":");
+                if (horaPartes.length >= 2) return `${horaPartes[0]}:${horaPartes[1]}`;
+            }
+            return val;
+        }
+
         function cargarPedidos() {
+            const tbody = document.getElementById("tabla-body");
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Cargando registros...</td></tr>';
+
             fetch(URL_API_GOOGLE)
                 .then(res => res.json())
                 .then(pedidos => {
-                    const contenedor = document.getElementById('lista-pedidos');
-                    contenedor.innerHTML = '';
-
-                    if (!pedidos || pedidos.length === 0) {
-                        contenedor.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay interacciones registradas aún.</td></tr>';
+                    if (!Array.isArray(pedidos) || pedidos.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No hay pedidos registrados.</td></tr>';
                         return;
                     }
 
-                    pedidos.slice().reverse().forEach(p => {
-                        let badgeMP = p.verificacionMP === 'Aprobado' 
-                            ? '<span class="estado-aprobado">Aprobado</span>' 
-                            : '<span class="estado-pendiente">Pendiente</span>';
+                    tbody.innerHTML = "";
+                    pedidos.forEach(ped => {
+                        const fechaLimpia = formatearFecha(ped.fecha);
+                        const horaLimpia = formatearHora(ped.hora);
 
-                        let badgeEstado = p.estado === 'Aprobado' 
-                            ? '<span class="estado-aprobado">Aprobado</span>' 
-                            : '<span class="estado-pendiente">Pendiente</span>';
-
-                        contenedor.innerHTML += `
+                        tbody.innerHTML += `
                             <tr>
-                                <td>${p.fecha || ''}</td>
-                                <td>${p.hora || ''}</td>
-                                <td>${p.productos || '-'}</td>
-                                <td><strong>${p.titular || '-'}</strong></td>
-                                <td>${p.whatsapp || '-'}</td>
-                                <td><strong style="color: #00ffcc;">$${Number(p.montoTotal).toFixed(2)}</strong></td>
-                                <td>${badgeMP}</td>
-                                <td>${badgeEstado}</td>
+                                <td>${fechaLimpia}</td>
+                                <td>${horaLimpia}</td>
+                                <td class="col-productos">${ped.productos}</td>
+                                <td><strong>${ped.titular}</strong></td>
+                                <td>${ped.whatsapp}</td>
+                                <td class="monto">$${parseFloat(ped.montoTotal).toFixed(2)}</td>
+                                <td><span class="badge badge-${ped.verificacionMP}">${ped.verificacionMP}</span></td>
+                                <td><span class="badge badge-${ped.estado}">${ped.estado}</span></td>
                             </tr>
                         `;
                     });
                 })
                 .catch(err => {
-                    console.error("Error al cargar pedidos:", err);
-                    document.getElementById('lista-pedidos').innerHTML = '<tr><td colspan="7" style="text-align:center; color: #e74c3c;">Error al conectar con Google Sheets.</td></tr>';
+                    console.error("Error al obtener pedidos:", err);
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #ff4444;">Error al cargar los datos.</td></tr>';
                 });
         }
 
-        document.addEventListener('DOMContentLoaded', cargarPedidos);
+        // Cargar los registros automáticamente al entrar al panel
+        document.addEventListener("DOMContentLoaded", cargarPedidos);
     </script>
 </body>
 </html>
