@@ -1,18 +1,19 @@
 const URL_API_GOOGLE = 'https://script.google.com/macros/s/AKfycbz8Te_iDAr2Y-3WsxXTYvp7rf6OItvjEo8XG5Ak67AgYcpFruu-P539t4yg7Hm3GcpK/exec';
 
-// Lista de productos del catálogo (puedes cambiar precios, nombres e imágenes aquí)
+// Lista de productos del catálogo
 const productos = [
-    { id: 1, nombre: "Remera Oversize", precio: 22, imagen: "https://via.placeholder.com/200" },
-    { id: 2, nombre: "Pantalón Wide Leg", precio: 40, imagen: "https://via.placeholder.com/200" },
-    { id: 3, nombre: "Buzo Cropped", precio: 60, imagen: "https://via.placeholder.com/200" },
-    { id: 4, nombre: "Campera Denim", precio: 50, imagen: "https://via.placeholder.com/200" },
-    { id: 5, nombre: "Top Urbano", precio: 18, imagen: "https://via.placeholder.com/200" },
-    { id: 6, nombre: "Short Sastrero", precio: 15, imagen: "https://via.placeholder.com/200" }
+    { id: 1, nombre: "Remera Oversize", precio: 22000, imagen: "https://via.placeholder.com/200" },
+    { id: 2, nombre: "Pantalón Wide Leg", precio: 45000, imagen: "https://via.placeholder.com/200" },
+    { id: 3, nombre: "Buzo Cropped", precio: 65000, imagen: "https://via.placeholder.com/200" },
+    { id: 4, nombre: "Campera Denim", precio: 55000, imagen: "https://via.placeholder.com/200" },
+    { id: 5, nombre: "Top Urbano", precio: 18000, imagen: "https://via.placeholder.com/200" },
+    { id: 6, nombre: "Short Sastrero", precio: 15000, imagen: "https://via.placeholder.com/200" }
 ];
 
 let carrito = [];
+let comisionActual = 0; // Guarda el valor aleatorio de los centavos de validación
 
-// Mostrar catálogo en pantalla
+// Mostrar el catálogo en pantalla
 function cargarCatalogo() {
     const contenedor = document.getElementById("catalogo");
     if (!contenedor) return;
@@ -53,30 +54,47 @@ function agregarAlCarrito(id) {
     actualizarCarritoUI();
 }
 
-// Actualizar lista e input de monto
+// Actualizar la lista, el subtotal, la comisión y el total exacto
 function actualizarCarritoUI() {
     const ulCarrito = document.getElementById("carrito");
     const inputMonto = document.getElementById("input-monto");
+    const textoSubtotal = document.getElementById("texto-subtotal");
+    const textoComision = document.getElementById("texto-comision");
 
-    ulCarrito.innerHTML = "";
-    let total = 0;
+    if (ulCarrito) ulCarrito.innerHTML = "";
+    let subtotal = 0;
 
-    carrito.forEach((item, index) => {
-        total += item.precio;
-        ulCarrito.innerHTML += `
-            <li>
-                <span>- ${item.nombre} (Talle ${item.talle})</span>
-                <strong style="color: #00ffcc;">$${item.precio.toLocaleString('es-AR')}</strong>
-            </li>
-        `;
+    carrito.forEach((item) => {
+        subtotal += item.precio;
+        if (ulCarrito) {
+            ulCarrito.innerHTML += `
+                <li>
+                    <span>- ${item.nombre} (Talle ${item.talle})</span>
+                    <strong style="color: #00ffcc;">$${item.precio.toLocaleString('es-AR')}</strong>
+                </li>
+            `;
+        }
     });
 
+    if (subtotal > 0) {
+        // Genera centavos de comisión únicos si aún no existen para este carrito (ej: 0.76)
+        if (comisionActual === 0) {
+            comisionActual = (Math.floor(Math.random() * 90) + 10) / 100;
+        }
+    } else {
+        comisionActual = 0;
+    }
+
+    const totalConComision = subtotal + comisionActual;
+
+    if (textoSubtotal) textoSubtotal.innerText = `$${subtotal.toLocaleString('es-AR')}`;
+    if (textoComision) textoComision.innerText = `$${comisionActual.toFixed(2)}`;
     if (inputMonto) {
-        inputMonto.value = `$${total.toLocaleString('es-AR')}`;
+        inputMonto.value = `$${totalConComision.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 }
 
-// Confirmar pedido y enviar a Google / WhatsApp
+// Confirmar pedido y enviar los datos
 function confirmarPedido() {
     const inputTitular = document.getElementById("input-titular");
     const inputWsp = document.getElementById("input-wsp");
@@ -150,5 +168,5 @@ function confirmarPedido() {
     });
 }
 
-// Inicializar al cargar la página
+// Inicializar cuando el HTML esté cargado
 document.addEventListener("DOMContentLoaded", cargarCatalogo);
