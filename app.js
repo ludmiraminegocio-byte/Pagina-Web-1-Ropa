@@ -1,156 +1,45 @@
-// 1. BASE DE DATOS DE PRODUCTOS
-const productos = [
-    { id: 1, nombre: "Remera Rosa", precio: 10, imagen: "img/remera.jpg" },
-    { id: 2, nombre: "Pantalón de Jean", precio: 20, imagen: "img/pantalon.jpg" },
-    { id: 3, nombre: "Campera de Abrigo", precio: 4, imagen: "img/campera.jpg" },
-    { id: 4, nombre: "Borsegos", precio: 55000, imagen: "img/borsegos.jpg" },
-    { id: 5, nombre: "Bikini Negra", precio: 18000, imagen: "img/bikini.jpg" },
-    { id: 6, nombre: "Pollera Negra", precio: 12000, imagen: "img/pollera-negra.jpg" }
-];
+const URL_API_GOOGLE = 'https://script.google.com/macros/s/AKfycbz8Te_iDAr2Y-3WsxXTYvp7rf6OItvjEo8XG5Ak67AgYcpFruu-P539t4yg7Hm3GcpK/exec';
 
-// 2. ESTADO DEL CARRITO
-let carrito = [];
+// Al hacer clic en el botón de confirmar pedido:
+const itemsParaEnviar = carrito.map(item => ({
+    id: item.id,
+    talle: item.talle
+}));
 
-// 3. MOSTRAR CATÁLOGO EN PANTALLA
-function mostrarCatalogo() {
-    const contenedor = document.getElementById("catalogo");
-    if (!contenedor) return;
-    
-    contenedor.innerHTML = ""; 
-    productos.forEach(producto => {
-        contenedor.innerHTML += `
-            <div style="background-color: white; color: black; border-radius: 8px; margin: 10px; padding: 15px; text-align: center; display: inline-block; width: 250px; vertical-align: top; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                <img src="${producto.imagen}" alt="${producto.nombre}" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px;" onerror="this.onerror=null; this.src='https://via.placeholder.com/250x250?text=Producto';">
-                <h3 style="margin: 10px 0 5px 0;">${producto.nombre}</h3>
-                <p style="font-weight: bold; margin-bottom: 10px;">$${producto.precio}</p>
-                <button onclick="agregarAlCarrito(${producto.id})" style="padding: 10px 15px; cursor: pointer; background-color: black; color: white; border: none; border-radius: 5px; font-weight: bold;">
-                    Agregar al carrito
-                </button>
-            </div>
-        `;
-    });
-}
+const datosPedido = {
+    titular: nombreTitular,
+    whatsapp: numeroWsp,
+    items: itemsParaEnviar
+};
 
-// 4. AGREGAR AL CARRITO
-function agregarAlCarrito(idProducto) {
-    const productoElegido = productos.find(p => p.id === idProducto);
-    if (productoElegido) {
-        carrito.push(productoElegido);
-        actualizarVistaCarrito();
-    }
-}
+btnWhatsapp.innerText = "Procesando...";
+btnWhatsapp.disabled = true;
 
-// 5. ELIMINAR DEL CARRITO
-function eliminarDelCarrito(index) {
-    carrito.splice(index, 1);
-    actualizarVistaCarrito();
-}
+fetch(URL_API_GOOGLE, {
+    method: 'POST',
+    body: JSON.stringify(datosPedido)
+})
+.then(res => res.json())
+.then(datos => {
+    if (!datos.exito) throw new Error("Error en el servidor");
 
-// 6. ACTUALIZAR CARRITO Y TOTAL
-function actualizarVistaCarrito() {
-    const listaCarrito = document.getElementById("carrito");
-    const inputMonto = document.getElementById("input-monto");
-    
-    if (listaCarrito) {
-        listaCarrito.innerHTML = ""; 
-        let total = 0;
+    // Construimos el mensaje de WhatsApp con el monto inalterable retornado por Google
+    let mensaje = `Hola, quiero confirmar mi pedido:\n\n`;
+    carrito.forEach(p => { mensaje += `- ${p.nombre} (Talle ${p.talle})\n`; });
+    mensaje += `\nSubtotal: $${datos.subtotalReal}`;
+    mensaje += `\nComisión de validación: $${datos.comision}`;
+    mensaje += `\n---------------------------------`;
+    mensaje += `\nMONTO TOTAL A TRANSFERIR: $${datos.montoExacto}`;
+    mensaje += `\n\nTitular: ${nombreTitular}`;
+    mensaje += `\nWhatsApp: ${numeroWsp}`;
+    mensaje += `\n\n⚠️ Transferir EXACTAMENTE $${datos.montoExacto} para que el sistema apruebe la compra.`;
 
-        carrito.forEach((producto, index) => {
-            total += producto.precio;
-            listaCarrito.innerHTML += `
-                <li style="margin-bottom: 8px; color: white;">
-                    ${producto.nombre} - $${producto.precio} 
-                    <button onclick="eliminarDelCarrito(${index})" style="background: #e74c3c; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer; margin-left: 10px;">❌</button>
-                </li>
-            `;
-        });
-
-        if (inputMonto) {
-            inputMonto.value = `$${total}`;
-        }
-    }
-}
-
-// 7. INICIALIZAR Y CONFIGURAR BOTÓN WHATSAPP
-document.addEventListener("DOMContentLoaded", () => {
-    // Carga los productos apenas la página esté lista
-    mostrarCatalogo();
-
-    const btnWhatsapp = document.getElementById("btn-whatsapp");
-    if (btnWhatsapp) {
-        btnWhatsapp.addEventListener("click", () => {
-            if (carrito.length === 0) {
-                alert("Tu carrito está vacío, ¡agrega algo primero!");
-                return;
-            }
-
-            // Capturar Titular
-            const inputTitular = document.getElementById('input-titular');
-            let nombreTitular = inputTitular ? inputTitular.value.trim() : "";
-
-            if (!nombreTitular) {
-                alert("Por favor, ingresa el nombre de la cuenta con la que vas a transferir.");
-                if (inputTitular) inputTitular.focus();
-                return;
-            }
-
-            // Capturar WhatsApp del cliente (¡NUEVO!)
-            const inputWsp = document.getElementById('input-wsp');
-            let numeroWsp = inputWsp ? inputWsp.value.trim() : "";
-
-            if (!numeroWsp) {
-                alert("Por favor, ingresa tu número de WhatsApp para que podamos enviarte el estado de tu pedido.");
-                if (inputWsp) inputWsp.focus();
-                return;
-            }
-
-            const inputMonto = document.getElementById('input-monto');
-            let montoTotal = inputMonto ? inputMonto.value : "$0";
-
-            // Guardar estadísticas globales
-            let clicksWp = parseInt(localStorage.getItem("stats_whatsapp") || 0) + 1;
-            localStorage.setItem("stats_whatsapp", clicksWp);
-
-            let totalCarritos = parseInt(localStorage.getItem("stats_total_carritos") || 0) + 1;
-            localStorage.setItem("stats_total_carritos", totalCarritos);
-
-            // Cada producto aparece en un renglón distinto (<br>) en el panel admin
-            let detalleProductos = carrito.map(p => `• ${p.nombre} ($${p.precio})`).join("<br>");
-
-            let ahora = new Date();
-            let fechaStr = ahora.toLocaleDateString();
-            let horaStr = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-            let historial = JSON.parse(localStorage.getItem("stats_historial_detallado")) || [];
-
-            // Guardar en el historial (¡AHORA INCLUYE EL WSP!)
-            historial.unshift({
-                fecha: fechaStr,
-                hora: horaStr,
-                producto: detalleProductos,
-                titular: nombreTitular,
-                wsp: numeroWsp, // Campo agregado para el panel admin
-                montoTotal: montoTotal,
-                comproWp: "Sí"
-            });
-
-            localStorage.setItem("stats_historial_detallado", JSON.stringify(historial));
-
-            // Mensaje para enviar a tu WhatsApp
-            let textoMensaje = "Hola, quiero confirmar este pedido:\n\n";
-            carrito.forEach(p => {
-                textoMensaje += `- ${p.nombre} ($${p.precio})\n`;
-            });
-
-            textoMensaje += `\nMonto total a pagar: ${montoTotal}`;
-            textoMensaje += `\nTitular de la cuenta: ${nombreTitular}`;
-            textoMensaje += `\nMi número de WhatsApp: ${numeroWsp}`; // Se agrega al mensaje que te envían
-            textoMensaje += `\n\nAdjunto el comprobante de transferencia. Gracias!`;
-
-            const numeroWhatsApp = "5493424279070"; 
-            const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(textoMensaje)}`;
-            
-            window.open(url, '_blank');
-        });
-    }
+    window.open(`https://wa.me/5493424279070?text=${encodeURIComponent(mensaje)}`, '_blank');
+    btnWhatsapp.innerText = "Confirmar y Avisar por WhatsApp";
+    btnWhatsapp.disabled = false;
+})
+.catch(err => {
+    alert("Ocurrió un error al procesar el pedido.");
+    btnWhatsapp.innerText = "Confirmar y Avisar por WhatsApp";
+    btnWhatsapp.disabled = false;
 });
