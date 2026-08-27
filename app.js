@@ -3,15 +3,15 @@ const URL_API_GOOGLE = 'https://script.google.com/macros/s/AKfycbzxwX4IvssM6Qwou
 // Lista de productos del catálogo
 const productos = [
     { id: 1, nombre: "Remera Oversize", precio: 220, imagen: "https://via.placeholder.com/200" },
-    { id: 2, nombre: "Pantalón Wide Leg", precio: 40, imagen: "https://via.placeholder.com/200" },
-    { id: 3, nombre: "Buzo Cropped", precio: 65, imagen: "https://via.placeholder.com/200" },
-    { id: 4, nombre: "Campera Denim", precio: 55, imagen: "https://via.placeholder.com/200" },
-    { id: 5, nombre: "Top Urbano", precio: 18, imagen: "https://via.placeholder.com/200" },
-    { id: 6, nombre: "Short Sastrero", precio: 15, imagen: "https://via.placeholder.com/200" }
+    { id: 2, nombre: "Pantalón Wide Leg", precio: 450, imagen: "https://via.placeholder.com/200" },
+    { id: 3, nombre: "Buzo Cropped", precio: 650, imagen: "https://via.placeholder.com/200" },
+    { id: 4, nombre: "Campera Denim", precio: 550, imagen: "https://via.placeholder.com/200" },
+    { id: 5, nombre: "Top Urbano", precio: 180, imagen: "https://via.placeholder.com/200" },
+    { id: 6, nombre: "Short Sastrero", precio: 150, imagen: "https://via.placeholder.com/200" }
 ];
 
 let carrito = [];
-let comisionActual = 0; // Guarda el valor aleatorio de los centavos de validación
+let comisionActual = 0; // Guarda los centavos de validación
 
 // Mostrar el catálogo en pantalla
 function cargarCatalogo() {
@@ -54,7 +54,7 @@ function agregarAlCarrito(id) {
     actualizarCarritoUI();
 }
 
-// Actualizar la lista, el subtotal, la comisión y el total exacto
+// Actualizar lista, subtotal, comisión y total exacto
 function actualizarCarritoUI() {
     const ulCarrito = document.getElementById("carrito");
     const inputMonto = document.getElementById("input-monto");
@@ -77,7 +77,7 @@ function actualizarCarritoUI() {
     });
 
     if (subtotal > 0) {
-        // Genera centavos de comisión únicos si aún no existen para este carrito (ej: 0.76)
+        // Genera centavos de comisión únicos si no se crearon para esta compra
         if (comisionActual === 0) {
             comisionActual = (Math.floor(Math.random() * 90) + 10) / 100;
         }
@@ -90,11 +90,14 @@ function actualizarCarritoUI() {
     if (textoSubtotal) textoSubtotal.innerText = `$${subtotal.toLocaleString('es-AR')}`;
     if (textoComision) textoComision.innerText = `$${comisionActual.toFixed(2)}`;
     if (inputMonto) {
-        inputMonto.value = `$${totalConComision.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        // Formato con punto de miles y coma decimal
+        const partes = totalConComision.toFixed(2).split('.');
+        const enteroFormateado = parseInt(partes[0], 10).toLocaleString('es-AR');
+        inputMonto.value = `$${enteroFormateado},${partes[1]}`;
     }
 }
 
-// Confirmar pedido y enviar los datos
+// Confirmar pedido enviando los datos y respetando la comisión de la web
 function confirmarPedido() {
     const inputTitular = document.getElementById("input-titular");
     const inputWsp = document.getElementById("input-wsp");
@@ -121,7 +124,8 @@ function confirmarPedido() {
     const datosPedido = {
         titular: nombreTitular,
         whatsapp: numeroWsp,
-        items: itemsParaEnviar
+        items: itemsParaEnviar,
+        comisionWeb: comisionActual
     };
 
     if (btnWhatsapp) {
@@ -168,5 +172,5 @@ function confirmarPedido() {
     });
 }
 
-// Inicializar cuando el HTML esté cargado
+// Inicializar al cargar la página
 document.addEventListener("DOMContentLoaded", cargarCatalogo);
