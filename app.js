@@ -38,7 +38,6 @@ function cargarCatalogo() {
         `;
     });
 
-    // Si ya se registró un pedido en esta sesión, mostramos el aviso debajo sin borrar el catálogo
     if (sessionStorage.getItem("pedido_bloqueado") === "true") {
         bloquearTiendaPorPedidoRealizado();
     }
@@ -100,7 +99,6 @@ function actualizarCarritoUI() {
     });
 
     if (subtotal > 0) {
-        // Genera centavos de comisión únicos si no se crearon para esta compra
         if (comisionActual === 0) {
             comisionActual = (Math.floor(Math.random() * 90) + 10) / 100;
         }
@@ -123,7 +121,7 @@ function actualizarCarritoUI() {
     }
 }
 
-// Bloquea la interfaz de pago pero deja visible el catálogo
+// Bloquea la interfaz de pago y muestra el cartel con las instrucciones y tu alias
 function bloquearTiendaPorPedidoRealizado() {
     sessionStorage.setItem("pedido_bloqueado", "true");
     
@@ -132,8 +130,13 @@ function bloquearTiendaPorPedidoRealizado() {
         checkoutSection.innerHTML = `
             <div style="background-color: #111; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #00ffcc; margin-top: 20px;">
                 <h3 style="color: #00ffcc; margin-top: 0;">¡Pedido Registrado con Éxito!</h3>
-                <p style="color: #ddd; font-size: 14px;">Ya generaste un pedido en esta sesión. Si deseas realizar otra compra, haz clic en el siguiente botón:</p>
-                <button onclick="sessionStorage.clear(); location.reload();" style="background-color: #00ffcc; color: #000; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 10px;">
+                <p style="color: #ddd; font-size: 14px;">Ya generaste un pedido en esta sesión.</p>
+                <div style="background: #222; padding: 12px; border-radius: 5px; margin: 15px 0; text-align: left; color: #fff;">
+                    <p style="margin: 5px 0;">👤 <b>Titular y Alias:</b> (Tu alias configurado)</p>
+                    <p style="margin: 5px 0;">📱 <b>WhatsApp de contacto:</b> 3424279070</p>
+                </div>
+                <p style="color: #aaa; font-size: 13px;">Si deseas realizar otra compra para iniciar un nuevo carrito, hacé clic acá:</p>
+                <button onclick="sessionStorage.clear(); location.reload();" style="background-color: #00ffcc; color: #000; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 5px;">
                     Hacer otro pedido
                 </button>
             </div>
@@ -203,10 +206,8 @@ function confirmarPedido() {
         mensaje += `\nWhatsApp: ${numeroWsp}`;
         mensaje += `\n\n⚠️ Transferir EXACTAMENTE $${datos.montoExacto} para que el sistema apruebe la compra.`;
 
-        // Abrimos WhatsApp en otra pestaña
         window.open(`https://wa.me/5493424279070?text=${encodeURIComponent(mensaje)}`, '_blank');
         
-        // Vaciamos el carrito y bloqueamos la sección de pago
         vaciarCarrito();
         bloquearTiendaPorPedidoRealizado();
     })
