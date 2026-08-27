@@ -68,7 +68,6 @@
             vertical-align: top;
         }
 
-        /* Mantiene el salto de línea para que cada producto aparezca uno abajo del otro */
         .col-productos {
             white-space: pre-line;
             line-height: 1.4;
@@ -93,6 +92,22 @@
         }
 
         .badge-Aprobado {
+            background-color: #00ffcc;
+            color: #000;
+        }
+
+        .btn-verificar {
+            background-color: #333;
+            color: #00ffcc;
+            border: 1px solid #00ffcc;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-left: 5px;
+        }
+
+        .btn-verificar:hover {
             background-color: #00ffcc;
             color: #000;
         }
@@ -129,9 +144,8 @@
     </div>
 
     <script>
-        const URL_API_GOOGLE = 'https://script.google.com/macros/s/AKfycbyj5xKl0IduZ8E1HoV-myqIK5FH9ZFVBHQtfznbVZ1u-hCpw4BfNpowNnWNOy3EZ67O/exec';
+        const URL_API_GOOGLE = 'https://script.google.com/macros/s/AKfycbworMHPk02ifcC3TRvDyMcyxImD74HWwdGqG-fd_Yab_n54Im7yqgAGUXpfqMHT12hS/exec';
 
-        // Formatea la fecha a día-mes-año (DD-MM-YYYY)
         function formatearFecha(val) {
             if (!val) return "-";
             const fechaObj = new Date(val);
@@ -148,7 +162,6 @@
             return val;
         }
 
-        // Formatea la hora en formato 24hs (00 a 23:mm)
         function formatearHora(val) {
             if (!val) return "-";
             const fechaObj = new Date(val);
@@ -164,7 +177,6 @@
             return val;
         }
 
-        // Formatea el string de productos separándolos por salto de línea
         function formatearProductosVertical(val) {
             if (!val) return "-";
             return String(val)
@@ -184,7 +196,6 @@
                         return;
                     }
 
-                    // Invierte el orden para mostrar lo más reciente arriba
                     pedidos.reverse();
 
                     tbody.innerHTML = "";
@@ -192,6 +203,13 @@
                         const fechaLimpia = formatearFecha(ped.fecha);
                         const horaLimpia = formatearHora(ped.hora);
                         const productosVerticales = formatearProductosVertical(ped.productos);
+                        const montoNum = parseFloat(ped.montoTotal);
+
+                        // Agrega el botón de re-verificar si el estado es Pendiente
+                        let celdaEstado = `<span class="badge badge-${ped.estado}">${ped.estado}</span>`;
+                        if (ped.estado === "Pendiente") {
+                            celdaEstado += ` <button class="btn-verificar" onclick="reVerificarPedido(${montoNum}, '${ped.titular}', this)">🔍 Re-verificar</button>`;
+                        }
 
                         tbody.innerHTML += `
                             <tr>
@@ -200,9 +218,9 @@
                                 <td class="col-productos">${productosVerticales}</td>
                                 <td><strong>${ped.titular}</strong></td>
                                 <td>${ped.whatsapp}</td>
-                                <td class="monto">$${parseFloat(ped.montoTotal).toFixed(2)}</td>
+                                <td class="monto">$${montoNum.toFixed(2)}</td>
                                 <td><span class="badge badge-${ped.verificacionMP}">${ped.verificacionMP}</span></td>
-                                <td><span class="badge badge-${ped.estado}">${ped.estado}</span></td>
+                                <td>${celdaEstado}</td>
                             </tr>
                         `;
                     });
@@ -211,6 +229,38 @@
                     console.error("Error al obtener pedidos:", err);
                     tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #ff4444;">Error al cargar los datos.</td></tr>';
                 });
+        }
+
+        function reVerificarPedido(monto, titular, boton) {
+            boton.innerText = "Buscando...";
+            boton.disabled = true;
+
+            fetch(URL_API_GOOGLE, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    accion: "aprobar_pago",
+                    montoExacto: monto,
+                    titular: titular
+                })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.exito) {
+                    alert("¡Pago aprobado con éxito!");
+                    cargarPedidos();
+                } else {
+                    alert("Aún no se detectó la transferencia por el monto exacto en Mercado Pago.");
+                    boton.innerText = "🔍 Re-verificar";
+                    boton.disabled = false;
+                }
+            })
+            .catch(err => {
+                console.error("Error re-verificando:", err);
+                alert("Error al conectar con el servidor.");
+                boton.innerText = "🔍 Re-verificar";
+                boton.disabled = false;
+            });
         }
 
         document.addEventListener("DOMContentLoaded", cargarPedidos);
