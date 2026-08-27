@@ -3,85 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Visualizaciones - Historial</title>
+    <title>Mi Tienda de Ropa - Lux Indument</title>
+    
     <style>
-        body { font-family: Arial, sans-serif; background-color: #121212; color: #fff; margin: 20px; }
-        h1 { color: #00ffcc; text-align: center; }
-        .btn-refresh { background-color: #00ffcc; color: #000; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; display: block; margin: 0 auto 20px auto; }
-        .tabla-pedidos { width: 100%; border-collapse: collapse; margin-top: 20px; background: #1e1e1e; border-radius: 8px; overflow: hidden; }
-        .tabla-pedidos th, .tabla-pedidos td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
-        .tabla-pedidos th { background-color: #252525; color: #00ffcc; }
-        .estado-pendiente { background-color: #ff9800; color: #000; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
-        .estado-aprobado { background-color: #4caf50; color: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        /* Estilos del Catálogo */
+        #catalogo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .tarjeta-producto {
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .tarjeta-producto img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+        .tarjeta-producto h3 {
+            margin: 10px 0 5px 0;
+            color: #00ffcc;
+        }
+        .tarjeta-producto select {
+            padding: 5px;
+            margin: 10px 0;
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            border-radius: 4px;
+        }
+        .btn-agregar {
+            background-color: #00ffcc;
+            color: #000;
+            border: none;
+            padding: 8px 15px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* Estilos del Carrito */
+        #carrito {
+            list-style: none;
+            padding: 0;
+        }
+        #carrito li {
+            background: #111;
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-eliminar {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        /* Checkout */
+        .formulario-pago {
+            background-color: #111;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            max-width: 400px;
+            border: 1px solid #333;
+        }
+        .formulario-pago label {
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .formulario-pago input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border-radius: 4px;
+            border: 1px solid #444;
+            background-color: #222;
+            color: white;
+        }
+        #input-monto {
+            color: #00ffcc;
+            font-weight: bold;
+            cursor: not-allowed;
+        }
+        .datos-bancarios {
+            background-color: #222; 
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+            color: #ddd;
+        }
+        .texto-resaltado {
+            color: #00ffcc;
+            font-size: 14px;
+            margin: 0 0 10px 0;
+        }
     </style>
 </head>
 <body>
+    <h1>Catálogo de Ropa - Lux Indument</h1>
+    
+    <!-- Catálogo dinámico -->
+    <div id="catalogo"></div>
+    
+    <hr>
 
-    <h1>Panel de Visualizaciones - Historial de Interacciones</h1>
-    <button class="btn-refresh" onclick="cargarPedidos()">🔄 Actualizar Registros</button>
+    <div style="display: flex; justify-content: space-between; align-items: center; max-width: 400px;">
+        <h2>Tu Carrito</h2>
+        <button onclick="vaciarCarrito()" style="background: none; border: 1px solid #ff4444; color: #ff4444; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Vaciar Carrito</button>
+    </div>
+    
+    <ul id="carrito" style="max-width: 400px;"></ul>
 
-    <table class="tabla-pedidos">
-        <thead>
-            <tr>
-                <th>Fecha / Hora</th>
-                <th>Productos Elegidos</th>
-                <th>Titular</th>
-                <th>Número WSP</th>
-                <th>Monto Total</th>
-                <th>Verificación MP</th>
-                <th>Estado del Pedido</th>
-            </tr>
-        </thead>
-        <tbody id="lista-pedidos">
-            <tr><td colspan="7" style="text-align:center;">Cargando historial desde Google Sheets...</td></tr>
-        </tbody>
-    </table>
+    <!-- Sección de Checkout -->
+    <div class="formulario-pago" id="checkout-section">
+        <h3>Finalizar Pedido</h3>
 
-    <script>
-        // URL Limpia y corregida
-        const URL_API_GOOGLE = 'https://script.google.com/macros/s/AKfycbylouzWyPDDuWpKMQLKQzi6erN_KpfHvNdb-osX21DDZwfunF091rnSCRIHpFfED0g/exec';
+        <div class="datos-bancarios">
+            <p class="texto-resaltado"><strong>1. Transferí el total a esta cuenta:</strong></p>
+            <p style="margin: 5px 0;"><strong>Alias:</strong> LUDMILA3105</p>
+            <p style="margin: 5px 0;"><strong>Titular:</strong> Ludmila</p>
+        </div>
 
-        function cargarPedidos() {
-            fetch(URL_API_GOOGLE)
-                .then(res => res.json())
-                .then(pedidos => {
-                    const contenedor = document.getElementById('lista-pedidos');
-                    contenedor.innerHTML = '';
+        <p class="texto-resaltado"><strong>2. Completá los datos para verificar tu pago:</strong></p>
+        
+        <label for="input-titular">¿Desde qué cuenta nos transferís?</label>
+        <input type="text" id="input-titular" placeholder="Nombre exacto del titular">
 
-                    if (!pedidos || pedidos.length === 0) {
-                        contenedor.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay interacciones registradas aún.</td></tr>';
-                        return;
-                    }
+        <label for="input-wsp">Tu WhatsApp (opcional pero recomendado):</label>
+        <input type="tel" id="input-wsp" placeholder="Ej: 342154279070">
 
-                    pedidos.slice().reverse().forEach(p => {
-                        let badgeMP = p.verificacionMP === 'Aprobado' 
-                            ? '<span class="estado-aprobado">Aprobado</span>' 
-                            : '<span class="estado-pendiente">Pendiente</span>';
+        <!-- DESGLOSE TRANSPARENTE DE PRECIOS -->
+        <div style="margin-top: 15px; padding: 10px; background-color: #1a1a1a; border-radius: 5px; border: 1px solid #333;">
+            <p style="margin: 5px 0; font-size: 14px;">Subtotal productos: <span id="texto-subtotal" style="float: right;">$0</span></p>
+            <p style="margin: 5px 0; font-size: 13px; color: #aaa;">Comisión de validación: <span id="texto-comision" style="float: right;">$0.00</span></p>
+            <small style="color: #888; font-size: 11px; display: block; margin-top: 3px;">
+                * Los centavos son una comisión requerida por el sistema para identificar y validar automáticamente tu transferencia.
+            </small>
+            <hr style="border-color: #333; margin: 8px 0;">
+            <label for="input-monto" style="margin: 0; font-weight: bold; color: #00ffcc;">Monto exacto a transferir:</label>
+            <input type="text" id="input-monto" value="$0" readonly style="margin-top: 5px;">
+        </div>
+        
+        <button id="btn-whatsapp" onclick="confirmarPedido()" style="margin-top: 20px; width: 100%; padding: 12px; font-size: 16px; font-weight: bold; cursor: pointer; background-color: #25D366; color: white; border: none; border-radius: 5px;">
+            Confirmar y Avisar por WhatsApp
+        </button>
+    </div>
 
-                        let badgeEstado = p.estado === 'Aprobado' 
-                            ? '<span class="estado-aprobado">Aprobado</span>' 
-                            : '<span class="estado-pendiente">Pendiente</span>';
-
-                        contenedor.innerHTML += `
-                            <tr>
-                                <td>${p.fecha || ''} ${p.hora || ''}</td>
-                                <td>${p.productos || '-'}</td>
-                                <td><strong>${p.titular || '-'}</strong></td>
-                                <td>${p.whatsapp || '-'}</td>
-                                <td><strong style="color: #00ffcc;">$${Number(p.montoTotal).toFixed(2)}</strong></td>
-                                <td>${badgeMP}</td>
-                                <td>${badgeEstado}</td>
-                            </tr>
-                        `;
-                    });
-                })
-                .catch(err => {
-                    console.error("Error al cargar pedidos:", err);
-                    document.getElementById('lista-pedidos').innerHTML = '<tr><td colspan="7" style="text-align:center; color: #e74c3c;">Error al conectar con Google Sheets.</td></tr>';
-                });
-        }
-
-        document.addEventListener('DOMContentLoaded', cargarPedidos);
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
