@@ -3,267 +3,250 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Visualizaciones - Lux Indument</title>
+    <title>Panel de Administración - Lux Indument</title>
     <style>
-        body {
-            background-color: #0d0d0d;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            margin: 0;
-        }
-
-        h1 {
-            text-align: center;
-            color: #00ffcc;
-            margin-bottom: 20px;
-        }
-
-        .btn-contenedor {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .btn-actualizar {
-            background-color: #00ffcc;
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            font-size: 15px;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .btn-actualizar:hover {
-            background-color: #00cca3;
-        }
-
-        .tabla-contenedor {
-            overflow-x: auto;
-            background-color: #1a1a1a;
-            border-radius: 8px;
-            padding: 10px;
-            border: 1px solid #333;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        th {
-            color: #00ffcc;
-            padding: 12px 10px;
-            border-bottom: 2px solid #333;
-            font-size: 14px;
-        }
-
-        td {
-            padding: 12px 10px;
-            border-bottom: 1px solid #262626;
-            font-size: 13px;
-            vertical-align: top;
-        }
-
-        .col-productos {
-            white-space: pre-line;
-            line-height: 1.4;
-        }
-
-        .monto {
-            color: #00ffcc;
-            font-weight: bold;
-        }
-
-        .badge {
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 12px;
-            display: inline-block;
-        }
-
-        .badge-Pendiente {
-            background-color: #ff9900;
-            color: #000;
-        }
-
-        .badge-Aprobado {
-            background-color: #00ffcc;
-            color: #000;
-        }
-
-        .btn-verificar {
-            background-color: #333;
-            color: #00ffcc;
-            border: 1px solid #00ffcc;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-            margin-left: 5px;
-        }
-
-        .btn-verificar:hover {
-            background-color: #00ffcc;
-            color: #000;
-        }
+        body { background:#0d0d0d; color:#fff; font-family:Arial,sans-serif; padding:20px; margin:0; }
+        h1 { text-align:center; color:#00ffcc; margin-bottom:10px; }
+        .barra { display:flex; justify-content:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+        button { background:#00ffcc; color:#000; border:none; padding:10px 18px; font-size:14px; font-weight:bold; border-radius:5px; cursor:pointer; }
+        button:hover { background:#00cca3; }
+        button.secundario { background:#333; color:#00ffcc; border:1px solid #00ffcc; }
+        button.secundario:hover { background:#00ffcc; color:#000; }
+        button:disabled { opacity:.5; cursor:not-allowed; }
+        .tabla-contenedor { overflow-x:auto; background:#1a1a1a; border-radius:8px; padding:10px; border:1px solid #333; }
+        table { width:100%; border-collapse:collapse; text-align:left; }
+        th { color:#00ffcc; padding:10px 8px; border-bottom:2px solid #333; font-size:13px; white-space:nowrap; }
+        td { padding:10px 8px; border-bottom:1px solid #262626; font-size:12px; vertical-align:top; }
+        .col-productos { white-space:pre-line; line-height:1.4; }
+        .monto { color:#00ffcc; font-weight:bold; }
+        .badge { padding:4px 9px; border-radius:4px; font-weight:bold; font-size:11px; display:inline-block; white-space:nowrap; }
+        .badge-Pendiente { background:#ff9900; color:#000; }
+        .badge-Aprobado { background:#00ffcc; color:#000; }
+        .badge-Revisar { background:#e74c3c; color:#fff; }
+        .badge-Vencido { background:#555; color:#ccc; }
+        .estado-vacio { text-align:center; color:#777; padding:20px; }
+        #login-box { max-width:360px; margin:80px auto; background:#1a1a1a; padding:25px; border-radius:8px; border:1px solid #333; text-align:center; }
+        #login-box input { width:100%; padding:10px; margin:10px 0; border-radius:4px; border:1px solid #444; background:#222; color:#fff; box-sizing:border-box; }
     </style>
 </head>
 <body>
 
-    <h1>Panel de Visualizaciones - Historial de Interacciones</h1>
-
-    <div class="btn-contenedor">
-        <button class="btn-actualizar" onclick="cargarPedidos()">🔄 Actualizar Registros</button>
+    <div id="login-box">
+        <h1 style="margin-top:0;">Acceso Admin</h1>
+        <p style="color:#aaa; font-size:13px;">Pegá el token de administrador (Script Properties → ADMIN_TOKEN).</p>
+        <input type="password" id="input-token" placeholder="Token de administrador">
+        <button id="btn-entrar" style="width:100%;">Entrar</button>
     </div>
 
-    <div class="tabla-contenedor">
-        <table>
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Hora</th>
-                    <th>Productos Elegidos</th>
-                    <th>Titular</th>
-                    <th>Número WSP</th>
-                    <th>Monto Total</th>
-                    <th>Verificación MP</th>
-                    <th>Estado del Pedido</th>
-                </tr>
-            </thead>
-            <tbody id="tabla-body">
-                <tr>
-                    <td colspan="8" style="text-align: center;">Cargando registros...</td>
-                </tr>
-            </tbody>
-        </table>
+    <div id="panel" style="display:none;">
+        <h1>Panel de Pedidos - Lux Indument</h1>
+
+        <div class="barra">
+            <button id="btn-actualizar">🔄 Actualizar</button>
+            <button id="btn-conciliar" class="secundario">💳 Conciliar ahora con MP</button>
+            <button id="btn-salir" class="secundario">Salir</button>
+        </div>
+
+        <div class="tabla-contenedor">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pedido</th><th>Fecha</th><th>Hora</th><th>Productos</th>
+                        <th>Titular</th><th>WSP</th><th>Monto</th>
+                        <th>Verif. MP</th><th>Nombre MP</th><th>Estado</th><th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-body"></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
         const URL_API_GOOGLE = 'https://script.google.com/macros/s/AKfycbyJmHD7mFmCHyWDuGD_AlezRmKaC6bTWz3HldnoF7Ke3vJ3OkstNMGnhtxJEZW2aCwx/exec';
 
-        function formatearFecha(val) {
-            if (!val) return "-";
-            const fechaObj = new Date(val);
-            if (!isNaN(fechaObj.getTime())) {
-                const dia = String(fechaObj.getDate()).padStart(2, '0');
-                const mes = String(fechaObj.getMonth() + 1).padStart(2, '0');
-                const ano = fechaObj.getFullYear();
-                return `${dia}-${mes}-${ano}`;
-            }
-            if (typeof val === 'string' && val.includes("T")) {
-                const partes = val.split("T")[0].split("-");
-                if (partes.length === 3) return `${partes[2]}-${partes[1]}-${partes[0]}`;
-            }
-            return val;
+        function getToken() { return sessionStorage.getItem("admin_token") || ""; }
+
+        function mostrarPanel() {
+            document.getElementById("login-box").style.display = "none";
+            document.getElementById("panel").style.display = "block";
+            cargarPedidos();
         }
 
-        function formatearHora(val) {
-            if (!val) return "-";
-            const fechaObj = new Date(val);
-            if (!isNaN(fechaObj.getTime())) {
-                const horas = String(fechaObj.getHours()).padStart(2, '0');
-                const minutos = String(fechaObj.getMinutes()).padStart(2, '0');
-                return `${horas}:${minutos}`;
-            }
-            if (typeof val === 'string' && val.includes("T")) {
-                const horaPartes = val.split("T")[1].split(":");
-                if (horaPartes.length >= 2) return `${horaPartes[0].padStart(2, '0')}:${horaPartes[1].padStart(2, '0')}`;
-            }
-            return val;
+        document.getElementById("btn-entrar").addEventListener("click", () => {
+            const t = document.getElementById("input-token").value.trim();
+            if (!t) return;
+            sessionStorage.setItem("admin_token", t);
+            mostrarPanel();
+        });
+
+        document.getElementById("btn-salir").addEventListener("click", () => {
+            sessionStorage.removeItem("admin_token");
+            location.reload();
+        });
+
+        document.getElementById("btn-actualizar").addEventListener("click", cargarPedidos);
+
+        document.getElementById("btn-conciliar").addEventListener("click", function () {
+            this.disabled = true;
+            this.textContent = "Conciliando...";
+            fetch(URL_API_GOOGLE, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ accion: "conciliar_ya", token: getToken() })
+            })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.exito) {
+                        alert(`Conciliación manual: ${res.aprobados || 0} aprobados, ${res.aRevisar || 0} a revisar.`);
+                        cargarPedidos();
+                    } else {
+                        alert("No se pudo conciliar: " + (res.motivo || res.error || "error desconocido"));
+                    }
+                })
+                .catch(err => alert("Error de conexión: " + err.message))
+                .finally(() => {
+                    this.disabled = false;
+                    this.textContent = "💳 Conciliar ahora con MP";
+                });
+        });
+
+        function celdaTexto(valor) {
+            const td = document.createElement("td");
+            td.textContent = valor == null ? "-" : String(valor);
+            return td;
         }
 
-        function formatearProductosVertical(val) {
-            if (!val) return "-";
-            return String(val)
-                .split(/,\s*/)
-                .join("\n");
+        function celdaBadge(valor) {
+            const td = document.createElement("td");
+            const span = document.createElement("span");
+            span.className = "badge badge-" + (valor || "Pendiente");
+            span.textContent = valor || "-";
+            td.appendChild(span);
+            return td;
         }
 
         function cargarPedidos() {
+            const token = getToken();
             const tbody = document.getElementById("tabla-body");
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Cargando registros...</td></tr>';
+            tbody.innerHTML = "";
+            const trCarga = document.createElement("tr");
+            const tdCarga = document.createElement("td");
+            tdCarga.colSpan = 11;
+            tdCarga.className = "estado-vacio";
+            tdCarga.textContent = "Cargando...";
+            trCarga.appendChild(tdCarga);
+            tbody.appendChild(trCarga);
 
-            fetch(URL_API_GOOGLE)
+            fetch(`${URL_API_GOOGLE}?listar=1&token=${encodeURIComponent(token)}`)
                 .then(res => res.json())
                 .then(pedidos => {
+                    if (pedidos && pedidos.exito === false) {
+                        // Token inválido o cualquier otro rechazo del servidor.
+                        alert("Acceso rechazado: " + (pedidos.error || "token inválido"));
+                        sessionStorage.removeItem("admin_token");
+                        location.reload();
+                        return;
+                    }
                     if (!Array.isArray(pedidos) || pedidos.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No hay pedidos registrados.</td></tr>';
+                        tbody.innerHTML = "";
+                        const tr = document.createElement("tr");
+                        const td = document.createElement("td");
+                        td.colSpan = 11; td.className = "estado-vacio";
+                        td.textContent = "No hay pedidos registrados.";
+                        tr.appendChild(td);
+                        tbody.appendChild(tr);
                         return;
                     }
 
                     pedidos.reverse();
-
                     tbody.innerHTML = "";
+
                     pedidos.forEach(ped => {
-                        const fechaLimpia = formatearFecha(ped.fecha);
-                        const horaLimpia = formatearHora(ped.hora);
-                        const productosVerticales = formatearProductosVertical(ped.productos);
-                        const montoNum = parseFloat(ped.montoTotal);
+                        const tr = document.createElement("tr");
+                        tr.appendChild(celdaTexto(ped.pedidoId));
+                        tr.appendChild(celdaTexto(ped.fecha));
+                        tr.appendChild(celdaTexto(ped.hora));
 
-                        // Agrega el botón de re-verificar si el estado es Pendiente
-                        let celdaEstado = `<span class="badge badge-${ped.estado}">${ped.estado}</span>`;
-                        if (ped.estado === "Pendiente") {
-                            celdaEstado += ` <button class="btn-verificar" onclick="reVerificarPedido(${montoNum}, '${ped.titular}', this)">🔍 Re-verificar</button>`;
+                        const tdProd = document.createElement("td");
+                        tdProd.className = "col-productos";
+                        tdProd.textContent = ped.productos || "-";
+                        tr.appendChild(tdProd);
+
+                        tr.appendChild(celdaTexto(ped.titular));
+                        tr.appendChild(celdaTexto(ped.whatsapp));
+
+                        const tdMonto = document.createElement("td");
+                        tdMonto.className = "monto";
+                        tdMonto.textContent = "$" + ped.montoTotal;
+                        tr.appendChild(tdMonto);
+
+                        tr.appendChild(celdaBadge(ped.verificacionMP));
+                        tr.appendChild(celdaTexto(ped.nombreMP));
+                        tr.appendChild(celdaBadge(ped.estado));
+
+                        const tdAccion = document.createElement("td");
+                        if (ped.estado === "Revisar" || ped.estado === "Pendiente") {
+                            const btn = document.createElement("button");
+                            btn.className = "secundario";
+                            btn.style.fontSize = "11px";
+                            btn.style.padding = "4px 8px";
+                            btn.textContent = "✔ Aprobar manual";
+                            btn.addEventListener("click", () => aprobarManual(ped.pedidoId, btn));
+                            tdAccion.appendChild(btn);
                         }
+                        // El link de WhatsApp se arma con la API del DOM, no con
+                        // interpolación de string: si el número o el nombre
+                        // contuvieran caracteres especiales, no rompen el atributo.
+                        if (ped.whatsapp) {
+                            const numLimpio = String(ped.whatsapp).replace(/[^0-9]/g, "");
+                            if (numLimpio) {
+                                const a = document.createElement("a");
+                                a.href = "https://wa.me/" + numLimpio;
+                                a.target = "_blank";
+                                a.textContent = "💬";
+                                a.style.marginLeft = "6px";
+                                tdAccion.appendChild(a);
+                            }
+                        }
+                        tr.appendChild(tdAccion);
 
-                        tbody.innerHTML += `
-                            <tr>
-                                <td>${fechaLimpia}</td>
-                                <td>${horaLimpia} hs</td>
-                                <td class="col-productos">${productosVerticales}</td>
-                                <td><strong>${ped.titular}</strong></td>
-                                <td>${ped.whatsapp}</td>
-                                <td class="monto">$${montoNum.toFixed(2)}</td>
-                                <td><span class="badge badge-${ped.verificacionMP}">${ped.verificacionMP}</span></td>
-                                <td>${celdaEstado}</td>
-                            </tr>
-                        `;
+                        tbody.appendChild(tr);
                     });
                 })
                 .catch(err => {
                     console.error("Error al obtener pedidos:", err);
-                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #ff4444;">Error al cargar los datos.</td></tr>';
+                    tbody.innerHTML = "";
+                    const tr = document.createElement("tr");
+                    const td = document.createElement("td");
+                    td.colSpan = 11; td.style.color = "#ff4444"; td.className = "estado-vacio";
+                    td.textContent = "Error al cargar los datos.";
+                    tr.appendChild(td);
+                    tbody.appendChild(tr);
                 });
         }
 
-        function reVerificarPedido(monto, titular, boton) {
-            boton.innerText = "Buscando...";
+        function aprobarManual(pedidoId, boton) {
+            const nota = prompt("Nota (opcional) sobre por qué apruebas manualmente:", "");
+            if (nota === null) return; // canceló
+
             boton.disabled = true;
+            boton.textContent = "...";
 
             fetch(URL_API_GOOGLE, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({
-                    accion: "aprobar_pago",
-                    montoExacto: monto,
-                    titular: titular
+                body: JSON.stringify({ accion: "marcar_manual", token: getToken(), pedidoId, nota })
+            })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.exito) { cargarPedidos(); }
+                    else { alert("No se pudo aprobar: " + (res.error || "error")); boton.disabled = false; boton.textContent = "✔ Aprobar manual"; }
                 })
-            })
-            .then(res => res.json())
-            .then(res => {
-                if (res.exito) {
-                    alert("¡Pago aprobado con éxito!");
-                    cargarPedidos();
-                } else {
-                    alert("Aún no se detectó la transferencia por el monto exacto en Mercado Pago.");
-                    boton.innerText = "🔍 Re-verificar";
-                    boton.disabled = false;
-                }
-            })
-            .catch(err => {
-                console.error("Error re-verificando:", err);
-                alert("Error al conectar con el servidor.");
-                boton.innerText = "🔍 Re-verificar";
-                boton.disabled = false;
-            });
+                .catch(err => { alert("Error: " + err.message); boton.disabled = false; boton.textContent = "✔ Aprobar manual"; });
         }
 
-        document.addEventListener("DOMContentLoaded", cargarPedidos);
+        // Si ya había un token guardado en esta pestaña, entrar directo.
+        if (getToken()) mostrarPanel();
     </script>
 </body>
 </html>
