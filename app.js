@@ -1,4 +1,4 @@
-const URL_API_GOOGLE = 'https://script.google.com/macros/s/AKfycbz7ih9pIp4o0ozrU3M80-mCDZKn9RUWt4dJhydFbZyVs2BppB9Q7o5sPM7o151V9meZ/exec';
+const URL_API_GOOGLE = 'https://script.google.com/macros/s/AKfycbyJmHD7mFmCHyWDuGD_AlezRmKaC6bTWz3HldnoF7Ke3vJ3OkstNMGnhtxJEZW2aCwx/exec';
 
 // Precios SOLO para mostrar en pantalla. El servidor recalcula todo desde
 // cero y estos valores nunca viajan en el pedido — si no coinciden con
